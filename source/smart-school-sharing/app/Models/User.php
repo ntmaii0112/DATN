@@ -12,6 +12,9 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    protected $table = 'tb_users'; // <<< thêm dòng này
+
+
     /**
      * The attributes that are mass assignable.
      *
@@ -21,6 +24,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone',
+        'address',
+        'created_by',
+        'updated_by',
     ];
 
     /**
@@ -42,4 +49,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function hasRequestedItem($itemId)
+    {
+        return $this->transactions()->where('item_id', $itemId)->exists();
+    }
 }

@@ -44,8 +44,26 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
+        $this->sendWelcomeEmail($user);
         Auth::login($user);
 
         return redirect(RouteServiceProvider::HOME);
+    }
+
+    protected function sendWelcomeEmail($user)
+    {
+        try {
+            app('email-service')->send(
+                $user->email,
+                'welcome',
+                [
+                    'subject' => 'Chào mừng bạn đến với ' . config('app.name'),
+                    'user' => $user,
+                    'login_url' => route('login')
+                ]
+            );
+        } catch (\Exception $e) {
+            \Log::error("Failed to send welcome email: " . $e->getMessage());
+        }
     }
 }
