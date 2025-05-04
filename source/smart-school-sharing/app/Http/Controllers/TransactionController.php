@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Item;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -50,26 +51,63 @@ class TransactionController extends Controller
         return redirect()->back()->with('success', 'Yêu cầu mượn đã được gửi thành công!');
     }
 
+//    public function index(Request $request)
+//    {
+//        $user = auth()->user();
+//
+//        $transactions = Transaction::query()
+//            ->with(['item', 'giver', 'receiver', 'item.category'])
+//            ->when($request->tab === 'requests', function ($query) use ($user) {
+//                // Chỉ lấy các request mà user hiện tại là người yêu cầu
+//                return $query->where('receiver_id', $user->id);
+//            }, function ($query) use ($user) {
+//                // Mặc định lấy tất cả transactions liên quan đến user
+//                return $query->where(function($q) use ($user) {
+//                    $q->where('giver_id', $user->id)
+//                        ->orWhere('receiver_id', $user->id);
+//                });
+//            })
+//            ->orderBy('created_at', 'desc')
+//            ->paginate(10);
+//
+//        return view('transactions.index', compact('transactions'));
+//    }
+// In your TransactionController or relevant controller
     public function index(Request $request)
     {
+        $tab = $request->query('tab', 'transactions');
+
         $user = auth()->user();
 
-        $transactions = Transaction::query()
-            ->with(['item', 'giver', 'receiver', 'item.category'])
-            ->when($request->tab === 'requests', function ($query) use ($user) {
-                // Chỉ lấy các request mà user hiện tại là người yêu cầu
-                return $query->where('receiver_id', $user->id);
-            }, function ($query) use ($user) {
-                // Mặc định lấy tất cả transactions liên quan đến user
-                return $query->where(function($q) use ($user) {
-                    $q->where('giver_id', $user->id)
-                        ->orWhere('receiver_id', $user->id);
-                });
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        if ($tab === 'requests') {
+            $transactions = Transaction::where('receiver_id', $user->id)
+                ->with(['item', 'giver', 'receiver'])
+                ->latest()
+                ->paginate(10);
+        } elseif ($tab === 'posts') {
+            // Add this new section for user's posts
+            $items = Item::withoutGlobalScope('not_deleted')
+                ->where('user_id', $user->id)
+                ->with(['category', 'images'])
+                ->latest()
+                ->paginate(10);
 
-        return view('transactions.index', compact('transactions'));
+            return view('transactions.index', [
+                'items' => $items,
+                'tab' => $tab,
+                'showPostsTab' => true
+            ]);
+        } else {
+            $transactions = Transaction::where('giver_id', $user->id)
+                ->with(['item', 'giver', 'receiver'])
+                ->latest()
+                ->paginate(10);
+        }
+
+        return view('transactions.index', [
+            'transactions' => $transactions,
+            'tab' => $tab
+        ]);
     }
 
     public function show(Transaction $transaction)
@@ -78,8 +116,18 @@ class TransactionController extends Controller
         if ($transaction->giver_id != auth()->id() && $transaction->receiver_id != auth()->id()) {
             abort(403);
         }
-        return view('transactions.show', compact('transaction'));
+        // Lấy thông tin chi tiết từ các bảng liên quan (Item, Contact Info)
+        $item = $transaction->item; // Giả sử rằng mối quan hệ với bảng item đã được định nghĩa trong model Transaction.
+        $contactInfo = $transaction->contactInfo; // Giả sử rằng mối quan hệ với bảng contact_info đã được định nghĩa.
+
+        // Lấy thông tin của Giver và Receiver từ mối quan hệ với bảng User
+        $giver = $transaction->giver; // Giả sử mối quan hệ đã được định nghĩa trong model Transaction
+        $receiver = $transaction->receiver; // Giả sử mối quan hệ đã được định nghĩa trong model Transaction
+//        return view('transactions.show', compact('transaction', 'item', 'contactInfo'));
+        return view('transactions.show', compact('transaction', 'item', 'contactInfo', 'giver', 'receiver'));
+
     }
+
 
     public function approve(Request $request, Transaction $transaction)
     {
@@ -143,16 +191,57 @@ class TransactionController extends Controller
 
     public function cancel(Transaction $transaction)
     {
-        // Authorization check (example using policies)
-        $this->authorize('cancel', $transaction);
+        // Kiểm tra quyền - chỉ người request mới được cancel
+        if ($transaction->receiver_id != auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
 
-        // Business logic to cancel transaction
-        $transaction->update([
-            'status' => 'cancelled',
-            'cancelled_at' => now(),
-        ]);
+        // Chỉ cho phép cancel khi ở trạng thái pending
+        if ($transaction->request_status != 'pending') {
+            return redirect()->back()
+                ->with('error', 'Only pending requests can be cancelled.');
+        }
 
-        return redirect()->route('transactions.index')
-            ->with('success', 'Transaction cancelled successfully');
+        DB::transaction(function () use ($transaction) {
+            // Cập nhật trạng thái transaction
+            $transaction->update([
+                'request_status' => 'cancelled',
+                'updated_at' => now(),
+            ]);
+
+            // Cập nhật trạng thái item nếu cần
+            if ($transaction->item) {
+                $transaction->item->update(['status' => 'available']);
+            }
+
+            // Gửi thông báo cho người cho mượn
+            // $transaction->giver->notify(new RequestCancelled($transaction));
+        });
+
+        return redirect()->back()
+            ->with('success', 'Request cancelled successfully.');
+    }
+
+
+    public function edit($id)
+    {
+        try {
+            $item = Item::findOrFail($id);
+            $categories = Category::all();
+
+            // Authorization check - ensure user owns the item
+            if ($item->user_id != auth()->id()) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            return view('items.edit', compact('item', 'categories'));
+        } catch (\Exception $e) {
+            Log::error('Error loading edit form', [
+                'item_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'Failed to load edit form.');
+        }
     }
 }

@@ -26,23 +26,24 @@ class MailService extends Mailable
     }
 
     /**
+     * Build the message.
+     */
+    public function build()
+    {
+        return $this->subject($this->data['subject'] ?? 'Thông báo từ ' . config('app.name'))
+            ->view('emails.'.$this->template)
+            ->with(['data' => $this->data]);
+    }
+
+    /**
      * Get the message envelope.
      */
     public function envelope(): Envelope
     {
+        $subject = $this->data['subject'] ?? 'Thông báo từ ' . config('app.name');
         return new Envelope(
-            subject: 'Mail Service',
+            subject: $subject,
         );
-    }
-
-    public function build()
-    {
-//        return $this->subject($this->data['subject'] ?? 'No Subject')
-//            ->view('emails.'.$this->template)
-//            ->with(['data' => $this->data]);
-        return $this->subject($this->data['subject'] ?? 'Thông báo từ ' . config('app.name'))
-            ->view('emails.'.$this->template)
-            ->with(['data' => $this->data]);
     }
 
     /**
@@ -51,14 +52,12 @@ class MailService extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.template',
+            view: 'emails.'.$this->template,
         );
     }
 
     /**
      * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array
     {

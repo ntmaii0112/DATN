@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Item;
+use App\Models\ItemImage;
 use App\Services\ItemService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ItemController extends Controller
 {
@@ -47,13 +49,94 @@ class ItemController extends Controller
 
     public function update(Request $request, $id)
     {
-        $data = $request->all();
-        return response()->json($this->service->update($id, $data));
+        $item = Item::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category_id' => 'required|exists:tb_categories,id',
+            'item_condition' => 'required|in:new,used',
+            'status' => 'required|in:available,unavailable',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'deleted_image_ids' => 'nullable|string',
+        ]);
+
+        // Cập nhật thông tin cơ bản
+        $item->update($validated);
+
+        // Xử lý ảnh bị xóa (chỉ đánh dấu, không xóa trực tiếp ở đây)
+        if ($request->filled('deleted_image_ids')) {
+            $this->processDeletedImages($request->deleted_image_ids, $item->id);
+        }
+
+        // Xử lý ảnh mới
+        if ($request->hasFile('images')) {
+            $this->processNewImages($request->file('images'), $item);
+        }
+
+        return redirect()->route('items.show', $item->id)
+            ->with('success', 'Item updated successfully.');
     }
+
+    protected function processDeletedImages($deletedIdsJson, $itemId)
+    {
+        $ids = json_decode($deletedIdsJson);
+        ItemImage::whereIn('id', $ids)
+            ->where('item_id', $itemId)
+            ->each(function ($image) {
+                if (Storage::disk('public')->exists($image->image_url)) {
+                    Storage::disk('public')->delete($image->image_url);
+                }
+                $image->delete();
+            });
+    }
+
+    protected function processNewImages($files, $item)
+    {
+        foreach ($files as $file) {
+            $path = $file->store('uploads/items', 'public');
+            $item->images()->create(['image_url' => $path]);
+        }
+    }
+
+
 
     public function destroy($id)
     {
-        return response()->json($this->service->delete($id));
+        $item = Item::find($id); // Sử dụng find() thay vì findOrFail() để tránh lỗi 404 nếu không tìm thấy item
+
+        if (!$item) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item not found'
+            ], 404);
+        }
+
+        // Kiểm tra quyền sở hữu (nếu cần)
+        if (auth()->id() !== $item->user_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not authorized to perform this action'
+            ], 403);
+        }
+
+        // Kiểm tra nếu item đã được lấy và có thể cập nhật
+        if ($item) {
+            // Cập nhật del_flag thay vì xóa
+            $item->del_flag = true;  // Cập nhật trực tiếp trường del_flag
+            $item->updated_by = auth()->id();
+            $item->updated_at = now();
+
+            if ($item->save()) {
+                // Thành công, quay lại trang cũ
+                return back()->with('success', 'Item has been deleted successfully');
+            } else {
+                // Nếu không lưu được, thông báo lỗi
+                return back()->with('error', 'Failed to update item.');
+            }
+        } else {
+            return back()->with('error', 'Item not found.');
+        }
     }
 
     public function itemsByCategory($id)
@@ -95,7 +178,7 @@ class ItemController extends Controller
             'description' => 'nullable|string',
             'category_id' => 'required|exists:tb_categories,id',
             'item_condition' => 'required|in:new,used',
-            'status' => 'required|in:available,unavailable',
+//            'status' => 'required|in:available,unavailable',
             'images.*' => 'nullable|image|max:2048', // 2MB mỗi ảnh
         ]);
 
@@ -105,7 +188,7 @@ class ItemController extends Controller
             'description' => $request->description,
             'category_id' => $request->category_id,
             'item_condition' => $request->item_condition,
-            'status' => $request->status,
+            'status' => 'submit',
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
             'created_at' => now(),
@@ -127,6 +210,26 @@ class ItemController extends Controller
         }
 
         return redirect()->route('items.show', $item->id)->with('success', 'Item created successfully!');
+    }
+
+    public function edit($id)
+    {
+        try {
+            $item = Item::findOrFail($id);
+            $categories = Category::all();
+            // Authorization check - ensure user owns the item
+            if ($item->user_id != auth()->id()) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            return view('items.edit', compact('item', 'categories'));
+        } catch (\Exception $e) {
+            Log::error('Error loading edit form', [
+                'item_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            return back()->with('error', 'Failed to load edit form.');
+        }
     }
 
 }

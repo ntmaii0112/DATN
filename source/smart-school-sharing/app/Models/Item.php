@@ -34,4 +34,11 @@ class Item extends Model
     {
         return $this->hasMany(Transaction::class, 'item_id');
     }
+
+    protected static function booted()
+    {
+        static::addGlobalScope('not_deleted', function ($query) {
+            $query->where('del_flag', false);
+        });
+    }
 }

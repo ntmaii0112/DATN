@@ -69,7 +69,7 @@
                     <label class="flex items-center">
                         <input type="checkbox" name="agreement" required
                                class="rounded border-gray-300 text-green-600 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50">
-                        <span class="ml-2 text-sm text-gray-600">Tôi cam kết sử dụng và bảo quản cẩn thận</span>
+                        <span class="ml-2 text-sm text-gray-600">I commit to using and handling with care.</span>
                     </label>
                 </div>
 
@@ -80,7 +80,7 @@
                     </button>
                     <button type="submit"
                             class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
-                        Gửi yêu cầu
+                        Send Request
                     </button>
                 </div>
             </form>

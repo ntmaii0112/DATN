@@ -18,6 +18,6 @@ class ContactController extends Controller
 
         Contact::create($data);
         // Ví dụ: Gửi email, lưu database hoặc flash message
-        return back()->with('success', 'Cảm ơn bạn đã liên hệ!');
+        return back()->with('success', 'Thank you for contacting us!');
     }
 }

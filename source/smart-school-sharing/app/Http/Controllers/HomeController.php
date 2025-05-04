@@ -14,8 +14,10 @@ class HomeController extends Controller
         $categoryId = $request->input('category');
 
         $featuredItems = Item::with(['user', 'category', 'images'])
+            ->whereIn('status', ['available', 'unavailable','pending'])
+            ->where('del_flag', false)
             ->latest()
-            ->take(4)
+            ->take(5)
             ->get()
             ->map(function ($item) {
                 $item->first_image_url = $item->images->isNotEmpty()
@@ -38,6 +40,8 @@ class HomeController extends Controller
         $searchResults = null;
         if ($query || $categoryId) {
             $searchResults = Item::with(['user', 'category', 'images'])
+                ->whereIn('status', ['available', 'unavailable'])
+                ->where('del_flag', false)
                 ->when($query, fn($q) => $q->where('name', 'like', "%$query%"))
                 ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
                 ->latest()
@@ -70,6 +74,8 @@ class HomeController extends Controller
 
         // Tìm kiếm items
         $searchResults = Item::with(['user', 'category', 'images'])
+            ->whereIn('status', ['available', 'unavailable','pending'])
+            ->where('del_flag', false)
             ->where(function($q) use ($query) {
                 $q->where('name', 'like', "%$query%")
                     ->orWhere('description', 'like', "%$query%");
@@ -96,7 +102,8 @@ class HomeController extends Controller
         $featuredItems = collect();
         if (!$query) {
             $featuredItems = Item::with(['images'])
-                ->where('status', 'available')
+                ->whereIn('status', ['available', 'unavailable','pending'])
+                ->where('del_flag', false)
                 ->latest()
                 ->take(6)
                 ->get();
@@ -135,4 +142,25 @@ class HomeController extends Controller
                 return $item;
             });
     }
+
+    // HomeController.php
+
+    public function loadFeaturedItems(Request $request)
+    {
+        $featuredItems = Item::with(['images'])
+            ->where('status', 'available','pending')
+            ->latest()
+            ->paginate(4); // 4 item mỗi lần
+
+        $featuredItems->getCollection()->transform(function ($item) {
+            $item->first_image_url = $item->images->isNotEmpty()
+                ? asset(ltrim($item->images->first()->image_url, '/'))
+                : null;
+            return $item;
+        });
+
+        return response()->json($featuredItems);
+    }
+
+
 }

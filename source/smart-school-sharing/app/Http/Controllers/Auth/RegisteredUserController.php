@@ -34,12 +34,16 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'phone' => ['required', 'string', 'max:20'],
+            'address' => ['required', 'string', 'max:255'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'phone' => $request->phone,
+            'address' => $request->address,
         ]);
 
         event(new Registered($user));
@@ -57,9 +61,10 @@ class RegisteredUserController extends Controller
                 $user->email,
                 'welcome',
                 [
-                    'subject' => 'Chào mừng bạn đến với ' . config('app.name'),
+                    'subject' => 'Welcome to ' . config('app.name'),
                     'user' => $user,
-                    'login_url' => route('login')
+                    'login_url' => route('login'),
+                    'app_name' => config('app.name')
                 ]
             );
         } catch (\Exception $e) {

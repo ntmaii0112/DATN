@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AccountController;
+use App\Http\Controllers\Admin\AdminItemController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\ItemImageController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ItemController;
@@ -40,6 +44,8 @@ Route::prefix('items')->controller(ItemController::class)->group(function () {
     Route::get('/category/{id}', 'itemsByCategory')->name('items.byCategory');
     Route::get('/{id}', 'show')->where('id', '[0-9]+')->name('items.show');
 });
+Route::get('/api/featured-items', [HomeController::class, 'loadFeaturedItems'])->name('api.featured-items');
+
 
 // Transactions (cần đăng nhập)
 Route::middleware(['auth'])->group(function () {
@@ -51,7 +57,44 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/transactions/{transaction}/reject', [TransactionController::class, 'reject'])->name('transactions.reject');
     Route::post('/transactions/cancel', [TransactionController::class, 'cancel'])
         ->name('transactions.cancel');
+    Route::delete('/transactions/{transaction}/cancel', [TransactionController::class, 'cancel'])
+        ->name('transactions.cancel');
+
+    // Item routes (separate group)
+    Route::prefix('items')->group(function() {
+        Route::get('/{item}/edit', [ItemController::class, 'edit'])->name('items.edit');
+        Route::put('/{id}', [ItemController::class, 'update'])->name('items.update');
+        Route::delete('/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
+        Route::delete('/images/{id}', [ItemImageController::class, 'destroy'])->name('item.images.destroy');
+        Route::delete('/item-images/{id}', [ItemController::class, 'destroyImage'])
+            ->name('item-images.destroy');
+    });
+
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'show'])->name('profile.show');
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::post('/update', [ProfileController::class, 'update'])->name('profile.update');
+    });
+
 });
 
-// Các route xác thực (được Laravel Breeze hoặc Jetstream tạo sẵn)
+Route::prefix('admin')
+    ->middleware(['auth', 'verified', 'can:admin-access'])
+    ->name('admin.')
+    ->group(function () {
+        Route::resource('categories', CategoryController::class)->except(['show']);
+
+        Route::prefix('accounts')->name('accounts.')->group(function () {
+            Route::get('/', [AccountController::class, 'index'])->name('index');
+            Route::post('/{user}/toggle', [AccountController::class, 'toggle'])->name('toggle');
+            Route::delete('/{user}', [AccountController::class, 'destroy'])->name('destroy');
+        });
+        Route::prefix('items')->name('items.')->group(function () {
+            Route::get('/{item}/edit', [ItemController::class, 'edit'])->name('items.edit');
+            Route::get('/', [AdminItemController::class, 'index'])->name('index');
+            Route::post('/{item}/approve', [AdminItemController::class, 'approve'])->name('approve');
+            Route::delete('/{item}', [AdminItemController::class, 'destroy'])->name('destroy');
+
+        });
+    });
 require __DIR__ . '/auth.php';

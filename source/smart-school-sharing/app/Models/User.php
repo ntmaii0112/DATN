@@ -28,6 +28,8 @@ class User extends Authenticatable
         'address',
         'created_by',
         'updated_by',
+        'status',
+        'role'
     ];
 
     /**
@@ -50,8 +52,24 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    public static function findOrFail($id)
+    {
+        // Tìm kiếm bản ghi theo id
+        $model = static::find($id);
+        // Nếu không tìm thấy, ném ngoại lệ với thông báo tùy chỉnh
+        if (!$model) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Record with ID {$id} not found.");
+        }
+        return $model;
+    }
+
+
     public function hasRequestedItem($itemId)
     {
         return $this->transactions()->where('item_id', $itemId)->exists();
+    }
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
     }
 }

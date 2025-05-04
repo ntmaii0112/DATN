@@ -3,8 +3,6 @@
 @section('content')
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Left Ad Section -->
-        <div class="ads">Advertisement</div>
-
         <div class="flex-1">
             <!-- Search Section -->
             <section class="p-8 text-center">
@@ -116,25 +114,57 @@
             @if(!request()->has('query'))
                 <section class="p-8 bg-yellow-100">
                     <h2 class="text-2xl font-bold text-center mb-6 text-green-700">Featured Items</h2>
-                    <div class="slider flex gap-4 overflow-x-auto">
-                        @foreach ($featuredItems as $item)
-                            <a href="{{ route('items.show', $item->id) }}" class="slider-item min-w-[200px] bg-white p-4 shadow rounded-md block hover:bg-green-50 transition">
-                                @if($item->first_image_url)
-                                    <img src="{{ $item->first_image_url }}"
-                                         alt="{{ $item->name }}"
-                                         class="w-full h-40 object-cover rounded-t-md mb-3">
-                                @else
-                                    <div class="w-full h-40 bg-gray-200 flex items-center justify-center rounded-t-md mb-3">
-                                        <span class="text-gray-500 text-sm">No Image</span>
-                                    </div>
-                                @endif
+{{--                    <div class="slider flex gap-4 overflow-x-auto">--}}
+{{--                        @foreach ($featuredItems as $item)--}}
+{{--                            <a href="{{ route('items.show', $item->id) }}" class="slider-item min-w-[200px] bg-white p-4 shadow rounded-md block hover:bg-green-50 transition">--}}
+{{--                                @if($item->first_image_url)--}}
+{{--                                    <img src="{{ $item->first_image_url }}"--}}
+{{--                                         alt="{{ $item->name }}"--}}
+{{--                                         class="w-full h-40 object-cover rounded-t-md mb-3">--}}
+{{--                                @else--}}
+{{--                                    <div class="w-full h-40 bg-gray-200 flex items-center justify-center rounded-t-md mb-3">--}}
+{{--                                        <span class="text-gray-500 text-sm">No Image</span>--}}
+{{--                                    </div>--}}
+{{--                                @endif--}}
 
-                                <div class="font-bold text-lg text-green-700">{{ $item->name }}</div>
-                                <div class="text-gray-600 text-sm">{{ Str::limit($item->description, 60) }}</div>
-                                <div class="text-xs mt-2 text-gray-400">#{{ $item->item_condition }} | {{ $item->status }}</div>
-                            </a>
-                        @endforeach
+{{--                                <div class="font-bold text-lg text-green-700">{{ $item->name }}</div>--}}
+{{--                                <div class="text-gray-600 text-sm">{{ Str::limit($item->description, 60) }}</div>--}}
+{{--                                <div class="text-xs mt-2 text-gray-400">#{{ $item->item_condition }} | {{ $item->status }}</div>--}}
+{{--                            </a>--}}
+{{--                        @endforeach--}}
+{{--                    </div>--}}
+                    <!-- Swiper Container -->
+                    <!-- Swiper -->
+                    <div class="relative">
+                        <div class="swiper mySwiper">
+                            <div class="swiper-wrapper" id="featured-items-wrapper">
+                                @foreach ($featuredItems as $item)
+                                    <div class="swiper-slide">
+                                        <a href="{{ route('items.show', $item->id) }}" class="slider-item min-w-[200px] bg-white p-4 shadow rounded-md block hover:bg-green-50 transition">
+                                            @if($item->first_image_url)
+                                                <img src="{{ $item->first_image_url }}"
+                                                     alt="{{ $item->name }}"
+                                                     class="w-full h-40 object-cover rounded-t-md mb-3">
+                                            @else
+                                                <div class="w-full h-40 bg-gray-200 flex items-center justify-center rounded-t-md mb-3">
+                                                    <span class="text-gray-500 text-sm">No Image</span>
+                                                </div>
+                                            @endif
+
+                                            <div class="font-bold text-lg text-green-700">{{ $item->name }}</div>
+                                            <div class="text-gray-600 text-sm">{{ Str::limit($item->description, 60) }}</div>
+                                            <div class="text-xs mt-2 text-gray-400">#{{ $item->item_condition }} | {{ $item->status }}</div>
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Navigation buttons (để BÊN NGOÀI swiper-wrapper) -->
+                        <div class="swiper-button-prev custom-nav"></div>
+                        <div class="swiper-button-next custom-nav"></div>
                     </div>
+
                 </section>
                 <!-- Categories Section -->
                 <section class="p-8">
@@ -152,9 +182,112 @@
         </div>
 
         <!-- Right Ad Section -->
-        <div class="ads">Advertisement</div>
     </div>
 
     <!-- Include Borrow Request Modal -->
     @include('components.borrow-request-modal')
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let currentPage = 1;
+            let lastPage = false;
+
+            const swiper = new Swiper(".mySwiper", {
+                slidesPerView: 4,
+                spaceBetween: 20,
+                navigation: {
+                    nextEl: ".swiper-button-next",
+                    prevEl: ".swiper-button-prev",
+                },
+                loop: false,
+                watchOverflow: false, // ép phải hiện nút Next Prev dù ít slide
+                breakpoints: {
+                    640: { slidesPerView: 1 },
+                    768: { slidesPerView: 2 },
+                    1024: { slidesPerView: 4 },
+                },
+                on: {
+                    reachEnd: function () {
+                        if (!lastPage) {
+                            loadMoreItems();
+                        }
+                    }
+                }
+            });
+
+            function loadMoreItems() {
+                currentPage++;
+                fetch(`{{ route('api.featured-items') }}?page=${currentPage}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.data.length === 0 || data.current_page >= data.last_page) {
+                            lastPage = true;
+                            hideNextButton();
+                        }
+
+                        data.data.forEach(item => {
+                            swiper.appendSlide(`
+                            <div class="swiper-slide">
+                                <a href="/items/${item.id}" class="slider-item min-w-[200px] bg-white p-4 shadow rounded-md block hover:bg-green-50 transition">
+                                    ${item.first_image_url ? `
+                                        <img src="${item.first_image_url}"
+                                             alt="${item.name}"
+                                             class="w-full h-40 object-cover rounded-t-md mb-3">
+                                    ` : `
+                                        <div class="w-full h-40 bg-gray-200 flex items-center justify-center rounded-t-md mb-3">
+                                            <span class="text-gray-500 text-sm">No Image</span>
+                                        </div>
+                                    `}
+                                    <div class="font-bold text-lg text-green-700">${item.name}</div>
+                                    <div class="text-gray-600 text-sm">${item.description ? item.description.substring(0, 60) : ''}</div>
+                                    <div class="text-xs mt-2 text-gray-400">#${item.item_condition ?? ''} | ${item.status ?? ''}</div>
+                                </a>
+                            </div>
+                        `);
+                        });
+                    })
+                    .catch(error => console.error('Error loading featured items:', error));
+            }
+
+            function hideNextButton() {
+                document.querySelector('.swiper-button-next').style.display = 'none';
+            }
+        });
+    </script>
+    <style>
+        .custom-nav {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+
+        .swiper-button-prev.custom-nav::after,
+        .swiper-button-next.custom-nav::after {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .swiper-button-prev.custom-nav {
+            left: -20px; /* canh ra bên trái */
+        }
+
+        .swiper-button-next.custom-nav {
+            right: -20px; /* canh ra bên phải */
+        }
+    </style>
+
+
 @endsection

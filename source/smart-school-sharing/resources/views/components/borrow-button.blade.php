@@ -19,27 +19,32 @@
 
 <div class="p-4 flex items-center justify-end">
     @auth
+        @if($item->user_id != auth()->id())  <!-- Kiểm tra nếu item không phải của người dùng hiện tại -->
         @if($limitExceeded && !$alreadyRequested)
             <button onclick="showRequestLimitAlert({{ $requestCount }})"
                     class="px-3 py-1 text-sm bg-red-100 text-red-800 rounded cursor-not-allowed"
-                    title="Bạn đã gửi quá {{ $requestLimit }} yêu cầu">
+                    title="You have exceeded the {{ $requestLimit }} request limit.">
                 <i class="fas fa-exclamation-circle mr-1"></i>
                 Đạt giới hạn
             </button>
         @elseif(!$alreadyRequested && $item->status === 'available')
             <button onclick="openModal({{ $item->id }}, '{{ $item->name }}')"
                     class="text-xs px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 transition whitespace-nowrap">
-                Gửi yêu cầu mượn
+                Send a borrow request
             </button>
         @elseif($alreadyRequested)
             <span class="status-badge bg-yellow-100 text-yellow-800">
-        <i class="fas fa-clock"></i>
-        <span class="truncate">Đang chờ ({{ $userRequests->where('item_id', $item->id)->first()->status ?? 'pending' }})</span>
-    </span>
+            <i class="fas fa-clock"></i>
+            <span class="truncate">Đang chờ ({{ $userRequests->where('item_id', $item->id)->first()->status ?? 'pending' }})</span>
+        </span>
         @else
             <span class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded">
-                {{ ucfirst($item->status) }}
-            </span>
+            {{ ucfirst($item->status) }}
+        </span>
+        @endif
+        @else
+            <span class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded">
+    </span>
         @endif
     @else
         <a href="{{ route('login') }}"

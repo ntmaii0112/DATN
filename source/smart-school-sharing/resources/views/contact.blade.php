@@ -60,7 +60,7 @@
                             </svg>
                             <div>
                                 <h3 class="font-bold text-gray-800">Phone</h3>
-                                <p class="text-gray-600">+84 123 456 789</p>
+                                <p class="text-gray-600">+84 00123 456 789</p>
                             </div>
                         </div>
                         <div class="flex items-start">
@@ -69,7 +69,7 @@
                             </svg>
                             <div>
                                 <h3 class="font-bold text-gray-800">Email</h3>
-                                <p class="text-gray-600">contact@smartschoolsharing.com</p>
+                                <p class="text-gray-600">thanhmai2@gmail.com</p>
                             </div>
                         </div>
                     </div>

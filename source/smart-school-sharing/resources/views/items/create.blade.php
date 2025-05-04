@@ -34,13 +34,6 @@
                 </select>
             </div>
 
-            <div class="mb-4">
-                <label class="block font-semibold mb-1">Status</label>
-                <select name="status" class="w-full border rounded p-2" required>
-                    <option value="available">Available</option>
-                    <option value="unavailable">Unavailable</option>
-                </select>
-            </div>
 
             <div class="mb-6" x-data="fileUpload()">
                 <label class="block font-semibold mb-2 text-gray-700">Images (Multiple)</label>

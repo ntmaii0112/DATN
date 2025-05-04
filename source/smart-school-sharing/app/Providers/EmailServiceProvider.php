@@ -26,7 +26,10 @@ class EmailServiceProvider extends ServiceProvider
                 public function send($to, $template, $data = [])
                 {
                     try {
-                        Mail::to($to)->send(new MailService($data, $template));
+                        Mail::send('emails.'.$template, ['data' => $data], function($message) use ($to, $data) {
+                            $message->to($to)
+                                ->subject($data['subject'] ?? 'Thông báo từ hệ thống');
+                        });
                         return true;
                     } catch (\Exception $e) {
                         \Log::error("Email sending failed: " . $e->getMessage());

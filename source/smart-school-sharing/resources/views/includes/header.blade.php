@@ -20,7 +20,7 @@
                 @else
                     <li>
                         <a href="{{ url('/items/create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                            Đăng tin
+                            Post an item
                         </a>
                     </li>
 
@@ -50,10 +50,32 @@
                             class="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-50"
                         >
                             <li>
+                                <a href="{{ route('profile.show') }}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                                    <span class="mr-2">👤</span> My Profile
+                                </a>
+                            </li>
+                            <li>
                                 <a href="{{ route('transactions.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
                                     <span class="mr-2">📦</span> My Transactions
                                 </a>
                             </li>
+                            @if (Auth::user()->role === 'admin')
+                                <li>
+                                    <a href="{{ route('admin.categories.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                                        <span class="mr-2">🛠️</span> Manage Categories
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.accounts.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                                        <span class="mr-2">👥</span> Manage Accounts
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.items.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                                        <span class="mr-2">📚</span> Manage Items
+                                    </a>
+                                </li>
+                            @endif
                             <li class="border-t border-gray-100"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
@@ -63,6 +85,7 @@
                                     </button>
                                 </form>
                             </li>
+
                         </ul>
                     </li>
                 @endguest

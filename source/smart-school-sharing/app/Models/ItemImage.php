@@ -18,7 +18,7 @@ class ItemImage extends Model
         'updated_by',
     ];
 
-    public $timestamps = false; // vì bạn đang sử dụng thủ công created_at, updated_at
+    public $timestamps = false;
 
     // Quan hệ ngược về Item
     public function item()
