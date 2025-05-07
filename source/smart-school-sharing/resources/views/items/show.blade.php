@@ -61,9 +61,13 @@
                     ← Back to Home
                 </a>
             </div>
-            <h1 class="text-3xl font-bold text-green-700 mb-4">{{ $item->name }}</h1>
+            <h1 class="text-3xl font-bold text-green-700 mb-4 truncate" title="{{ $item->name }}">
+                {{ $item->name }}
+            </h1>
+            <p class="text-gray-600 mb-6 truncate" title="{{ $item->description }}">
+                {{ $item->description }}
+            </p>
 
-            <p class="text-gray-600 mb-6">{{ $item->description }}</p>
 
             <div class="space-y-3 mb-6">
                 <div class="flex items-center">
@@ -101,17 +105,30 @@
                 :requestCount="$requestCount ?? 0"
                 :userRequests="$userRequests ?? collect()"
             />
-{{--            <div class="flex space-x-4">--}}
-{{--                <a href="{{ route('home') }}"--}}
-{{--                   class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors">--}}
-{{--                    ← Back to Home--}}
-{{--                </a>--}}
-
-{{--            </div>--}}
         </div>
     </div>
     <!-- Include Borrow Request Modal -->
     @include('components.borrow-request-modal')
+    <style>
+        .item-name {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all 0.3s ease;
+            cursor: default;
+            position: relative;
+            z-index: 0;
+        }
+        .item-name:hover {
+            -webkit-line-clamp: unset;
+            white-space: normal;
+            overflow: visible;
+            background-color: #f9f9f9;
+            z-index: 10;
+        }
+    </style>
 @endsection
 
 @push('scripts')
@@ -185,4 +202,5 @@
             }));
         });
     </script>
+
 @endpush

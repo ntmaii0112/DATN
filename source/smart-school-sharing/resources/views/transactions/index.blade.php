@@ -64,7 +64,7 @@
                                             @endif
                                         </div>
                                         <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $item->name }}</div>
+                                            <div class="text-sm font-medium text-gray-900 whitespace-normal break-words max-w-xs">{{ $item->name }}</div>
                                             <div class="text-sm text-gray-500">{{ Str::limit($item->description, 50) }}</div>
                                         </div>
                                     </div>
@@ -128,7 +128,7 @@
 
                 @if($items->hasPages())
                     <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                        {{ $items->links() }}
+                        {{ $items->appends(['tab' => request()->tab])->links() }}
                     </div>
                 @endif
             </div>
@@ -164,7 +164,7 @@
                                         @endif
                                     </div>
                                     <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ $transaction->item->name }}</div>
+                                        <div class="text-sm font-medium text-gray-900 whitespace-normal break-words max-w-xs">{{ $transaction->item->name }}</div>
                                         <div class="text-sm text-gray-500">{{ $transaction->item->category->name }}</div>
                                     </div>
                                 </div>
@@ -348,7 +348,7 @@
             <!-- Pagination -->
             @if($transactions->hasPages())
                 <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                    {{ $transactions->links() }}
+                    {{ $transactions->appends(['tab' => request()->tab])->links() }}
                 </div>
             @endif
         </div>

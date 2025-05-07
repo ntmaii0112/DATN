@@ -43,7 +43,7 @@
                                         <p class="text-gray-500 text-sm mt-1">
                                             {{ $item->created_at->format('Y') }} -
                                             {{ ucfirst($item->item_condition) }} -
-                                            Đã sử dụng
+                                            Used
                                         </p>
                                     </div>
                                 </div>

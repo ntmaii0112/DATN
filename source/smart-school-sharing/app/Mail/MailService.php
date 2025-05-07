@@ -2,12 +2,13 @@
 
 namespace App\Mail;
 
+use App\Models\Transaction;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Mail;
 
 class MailService extends Mailable
 {
@@ -62,5 +63,38 @@ class MailService extends Mailable
     public function attachments(): array
     {
         return [];
+    }
+
+    protected function sendBorrowEmails(Transaction $transaction)
+    {
+        $item = $transaction->item;
+        $giver = $transaction->giver;
+        $receiver = $transaction->receiver;
+
+        // Dữ liệu email chung
+        $emailData = [
+            'subject' => 'Item Borrowing Request Notification: ' . $item->name,
+            'transaction' => $transaction,
+            'item' => $item,
+            'giver' => $giver,
+            'receiver' => $receiver,
+            'borrower_name' => $transaction->borrower_name,
+        ];
+
+        try {
+            // Gửi cho người cho mượn
+            Mail::to($giver->email)
+                ->send(new MailService($emailData, 'item_borrowed'));
+
+            // Gửi cho người mượn
+            $receiverEmail = $receiver ? $receiver->email : $transaction->contact_info;
+            if (filter_var($receiverEmail, FILTER_VALIDATE_EMAIL)) {
+                Mail::to($receiverEmail)
+                    ->send(new MailService($emailData, 'item_borrowed'));
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Gửi email thất bại: ' . $e->getMessage());
+        }
     }
 }

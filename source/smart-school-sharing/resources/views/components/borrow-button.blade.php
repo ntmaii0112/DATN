@@ -6,12 +6,14 @@
 ])
 
 @php
-    // Sửa cách kiểm tra already_requested
     $requestLimit = $requestLimit ?? config('borrow.limits.max_requests_per_user');
-    $alreadyRequested = $userRequests->contains('item_id', $item->id);
+    $filteredRequests = $userRequests->filter(function ($request) use ($item) {
+        return $request->item_id === $item->id &&
+               in_array($request->request_status, ['pending','approved', 'completed']);
+    });
+    $alreadyRequested = $filteredRequests->isNotEmpty();
     $limitExceeded = $requestCount >= $requestLimit;
 
-    // Lấy trạng thái nếu đã yêu cầu
     $requestStatus = $alreadyRequested
         ? $userRequests->firstWhere('item_id', $item->id)->status
         : null;
@@ -25,7 +27,7 @@
                     class="px-3 py-1 text-sm bg-red-100 text-red-800 rounded cursor-not-allowed"
                     title="You have exceeded the {{ $requestLimit }} request limit.">
                 <i class="fas fa-exclamation-circle mr-1"></i>
-                Đạt giới hạn
+                Limit reached
             </button>
         @elseif(!$alreadyRequested && $item->status === 'available')
             <button onclick="openModal({{ $item->id }}, '{{ $item->name }}')"
@@ -35,11 +37,10 @@
         @elseif($alreadyRequested)
             <span class="status-badge bg-yellow-100 text-yellow-800">
             <i class="fas fa-clock"></i>
-            <span class="truncate">Đang chờ ({{ $userRequests->where('item_id', $item->id)->first()->status ?? 'pending' }})</span>
+            <span class="truncate">borrowed</span>
         </span>
         @else
             <span class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded">
-            {{ ucfirst($item->status) }}
         </span>
         @endif
         @else
@@ -49,7 +50,7 @@
     @else
         <a href="{{ route('login') }}"
            class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
-            Đăng nhập để mượn
+            Please log in to borrow
         </a>
     @endauth
 </div>

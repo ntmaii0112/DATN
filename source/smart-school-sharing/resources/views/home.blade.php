@@ -22,9 +22,18 @@
             <!-- Search Results Section -->
             @if(isset($searchResults) && $searchResults->count() > 0)
                 <section class="p-4 bg-white">
-                    <h2 class="text-2xl font-bold mb-6 text-green-700 pl-4">
-                        Search Results for "{{ request('query') }}"
-                    </h2>
+                    @if(isset($searchResults) && $searchResults->count() > 0)
+                        <section class="p-4 bg-white">
+                            <h2 class="text-2xl font-bold mb-6 text-green-700 pl-4">
+                                @if(request()->has('category'))
+                                    {{ $categoryName ?? 'Category' }} Items
+                                @else
+                                    Search Results for "{{ request('query') }}"
+                                @endif
+                            </h2>
+                            <!-- ... phần còn lại giữ nguyên ... -->
+                        </section>
+                    @endif
                     <div class="space-y-4">
                         @foreach ($searchResults as $item)
                             <div class="bg-white border rounded-lg overflow-hidden hover:shadow-md transition flex flex-col md:flex-row min-w-0">
@@ -51,7 +60,7 @@
                                                     <p class="text-gray-500 text-sm mt-1">
                                                         {{ $item->created_at->format('Y') }} -
                                                         {{ ucfirst($item->item_condition) }} -
-                                                        Đã sử dụng
+                                                        Used
                                                     </p>
                                                 </div>
                                             </div>
@@ -114,46 +123,48 @@
             @if(!request()->has('query'))
                 <section class="p-8 bg-yellow-100">
                     <h2 class="text-2xl font-bold text-center mb-6 text-green-700">Featured Items</h2>
-{{--                    <div class="slider flex gap-4 overflow-x-auto">--}}
-{{--                        @foreach ($featuredItems as $item)--}}
-{{--                            <a href="{{ route('items.show', $item->id) }}" class="slider-item min-w-[200px] bg-white p-4 shadow rounded-md block hover:bg-green-50 transition">--}}
-{{--                                @if($item->first_image_url)--}}
-{{--                                    <img src="{{ $item->first_image_url }}"--}}
-{{--                                         alt="{{ $item->name }}"--}}
-{{--                                         class="w-full h-40 object-cover rounded-t-md mb-3">--}}
-{{--                                @else--}}
-{{--                                    <div class="w-full h-40 bg-gray-200 flex items-center justify-center rounded-t-md mb-3">--}}
-{{--                                        <span class="text-gray-500 text-sm">No Image</span>--}}
-{{--                                    </div>--}}
-{{--                                @endif--}}
-
-{{--                                <div class="font-bold text-lg text-green-700">{{ $item->name }}</div>--}}
-{{--                                <div class="text-gray-600 text-sm">{{ Str::limit($item->description, 60) }}</div>--}}
-{{--                                <div class="text-xs mt-2 text-gray-400">#{{ $item->item_condition }} | {{ $item->status }}</div>--}}
-{{--                            </a>--}}
-{{--                        @endforeach--}}
-{{--                    </div>--}}
                     <!-- Swiper Container -->
                     <!-- Swiper -->
                     <div class="relative">
                         <div class="swiper mySwiper">
                             <div class="swiper-wrapper" id="featured-items-wrapper">
                                 @foreach ($featuredItems as $item)
-                                    <div class="swiper-slide">
-                                        <a href="{{ route('items.show', $item->id) }}" class="slider-item min-w-[200px] bg-white p-4 shadow rounded-md block hover:bg-green-50 transition">
+                                    <div class="swiper-slide h-auto">
+{{--                                        <a href="{{ route('items.show', $item->id) }}" class="slider-item min-w-[200px] bg-white p-4 shadow rounded-md block hover:bg-green-50 transition">--}}
+{{--                                            @if($item->first_image_url)--}}
+{{--                                                <img src="{{ $item->first_image_url }}"--}}
+{{--                                                     alt="{{ $item->name }}"--}}
+{{--                                                     class="w-full h-40 object-cover rounded-t-md mb-3">--}}
+{{--                                            @else--}}
+{{--                                                <div class="w-full h-40 bg-gray-200 flex items-center justify-center rounded-t-md mb-3">--}}
+{{--                                                    <span class="text-gray-500 text-sm">No Image</span>--}}
+{{--                                                </div>--}}
+{{--                                            @endif--}}
+
+{{--                                            <div class="font-bold text-lg text-green-700">{{ $item->name }}</div>--}}
+{{--                                            <div class="text-gray-600 text-sm">{{ Str::limit($item->description, 60) }}</div>--}}
+{{--                                            <div class="text-xs mt-2 text-gray-400">#{{ $item->item_condition }} | {{ $item->status }}</div>--}}
+{{--                                        </a>--}}
+                                        <a href="{{ route('items.show', $item->id) }}" class="slider-item bg-white shadow rounded-md hover:bg-green-50 transition">
                                             @if($item->first_image_url)
                                                 <img src="{{ $item->first_image_url }}"
                                                      alt="{{ $item->name }}"
-                                                     class="w-full h-40 object-cover rounded-t-md mb-3">
+                                                     class="w-full rounded-t-md">
                                             @else
-                                                <div class="w-full h-40 bg-gray-200 flex items-center justify-center rounded-t-md mb-3">
+                                                <div class="w-full bg-gray-200 flex items-center justify-center rounded-t-md">
                                                     <span class="text-gray-500 text-sm">No Image</span>
                                                 </div>
                                             @endif
 
-                                            <div class="font-bold text-lg text-green-700">{{ $item->name }}</div>
-                                            <div class="text-gray-600 text-sm">{{ Str::limit($item->description, 60) }}</div>
-                                            <div class="text-xs mt-2 text-gray-400">#{{ $item->item_condition }} | {{ $item->status }}</div>
+                                            <div class="slider-content">
+                                                <div class="item-name">{{ $item->name }}</div>
+                                                <div class="item-description" title="{{ $item->description }}">
+                                                    {{ $item->description }}
+                                                </div>
+                                                <div class="item-meta">
+                                                    #{{ $item->item_condition }} | {{ $item->status }}
+                                                </div>
+                                            </div>
                                         </a>
                                     </div>
                                 @endforeach
@@ -228,24 +239,31 @@
                             hideNextButton();
                         }
 
+                        // Đoạn code mới thêm vào đây
                         data.data.forEach(item => {
                             swiper.appendSlide(`
-                            <div class="swiper-slide">
-                                <a href="/items/${item.id}" class="slider-item min-w-[200px] bg-white p-4 shadow rounded-md block hover:bg-green-50 transition">
-                                    ${item.first_image_url ? `
-                                        <img src="${item.first_image_url}"
-                                             alt="${item.name}"
-                                             class="w-full h-40 object-cover rounded-t-md mb-3">
-                                    ` : `
-                                        <div class="w-full h-40 bg-gray-200 flex items-center justify-center rounded-t-md mb-3">
-                                            <span class="text-gray-500 text-sm">No Image</span>
-                                        </div>
-                                    `}
-                                    <div class="font-bold text-lg text-green-700">${item.name}</div>
-                                    <div class="text-gray-600 text-sm">${item.description ? item.description.substring(0, 60) : ''}</div>
-                                    <div class="text-xs mt-2 text-gray-400">#${item.item_condition ?? ''} | ${item.status ?? ''}</div>
-                                </a>
-                            </div>
+                        <div class="swiper-slide h-auto">
+                            <a href="/items/${item.id}" class="slider-item bg-white shadow rounded-md hover:bg-green-50 transition">
+                                ${item.first_image_url ? `
+                                    <img src="${item.first_image_url}"
+                                         alt="${item.name}"
+                                         class="w-full rounded-t-md">
+                                ` : `
+                                    <div class="w-full bg-gray-200 flex items-center justify-center rounded-t-md">
+                                        <span class="text-gray-500 text-sm">No Image</span>
+                                    </div>
+                                `}
+                                <div class="slider-content">
+                                    <div class="item-name">${item.name}</div>
+                                    <div class="item-description" title="${item.description || ''}">
+                                        ${item.description || ''}
+                                    </div>
+                                    <div class="item-meta">
+                                        #${item.item_condition ?? ''} | ${item.status ?? ''}
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
                         `);
                         });
                     })
@@ -286,6 +304,55 @@
 
         .swiper-button-next.custom-nav {
             right: -20px; /* canh ra bên phải */
+        }
+
+        .slider-item {
+            height: 100%; /* Chiếm full height của slide */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slider-item img, .slider-item div[class*="bg-gray-200"] {
+            height: 160px; /* Fixed height cho ảnh */
+            object-fit: cover;
+        }
+
+        .slider-content {
+            flex: 1; /* Chiếm phần không gian còn lại */
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+        }
+
+        .item-name {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 1;
+            font-size: 1.125rem;
+            font-weight: bold;
+            color: #047857; /* Màu green-700 */
+            margin-bottom: 4px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .item-description {
+            display: -webkit-box;
+            -webkit-line-clamp: 1; /* Giới hạn 1 dòng */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #4b5563; /* Màu gray-600 */
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            margin-bottom: 8px;
+            min-height: 1.25rem; /* Đảm bảo có space ngay cả khi không có description */
+        }
+
+        .item-meta {
+            font-size: 0.75rem;
+            color: #9ca3af; /* Màu gray-400 */
+            margin-top: auto; /* Đẩy xuống dưới cùng */
         }
     </style>
 

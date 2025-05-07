@@ -10,14 +10,21 @@ use Illuminate\Support\Facades\Log;
 
 class AdminItemController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $items = Item::withoutGlobalScope('not_deleted') // <- Bỏ qua scope del_flag
-        ->with('user', 'category')
+        $search = $request->input('search');
+        $items = Item::withoutGlobalScope('not_deleted')
+            ->with('user', 'category')
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            })
             ->orderBy('created_at', 'desc')
             ->get();
-        return view('admin.items.index', compact('items'));
+
+        return view('admin.items.index', compact('items', 'search'));
     }
+
 
     public function approve(Item $item)
     {

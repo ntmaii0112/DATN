@@ -35,7 +35,20 @@ class ItemController extends Controller
                 return asset(''.ltrim($img->image_url, '/'));
             })->toArray();
 
-            return view('items.show', compact('item', 'images'));
+            $user = auth()->user();
+            $requestCount = 0;
+            $userRequests = collect();
+            if ($user) {
+                // Lấy tất cả userRequests (không lọc status)
+                $userRequests = \App\Models\Transaction::where('receiver_id', $user->id)->get();
+                // Đếm các request có status = pending
+                $requestCount = $userRequests->where('request_status', 'pending')->count();
+                // Lấy danh sách item_id từ các yêu cầu (toàn bộ)
+                $requestedItems = $userRequests->pluck('item_id')->toArray();
+            }
+
+
+            return view('items.show', compact('item', 'images','requestCount', 'userRequests'));
 
         } catch (\Exception $e) {
             Log::error('Error loading item detail', [
@@ -50,20 +63,16 @@ class ItemController extends Controller
     public function update(Request $request, $id)
     {
         $item = Item::findOrFail($id);
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'required|exists:tb_categories,id',
             'item_condition' => 'required|in:new,used',
-            'status' => 'required|in:available,unavailable',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'deleted_image_ids' => 'nullable|string',
         ]);
 
-        // Cập nhật thông tin cơ bản
         $item->update($validated);
-
         // Xử lý ảnh bị xóa (chỉ đánh dấu, không xóa trực tiếp ở đây)
         if ($request->filled('deleted_image_ids')) {
             $this->processDeletedImages($request->deleted_image_ids, $item->id);
@@ -94,11 +103,17 @@ class ItemController extends Controller
     protected function processNewImages($files, $item)
     {
         foreach ($files as $file) {
-            $path = $file->store('uploads/items', 'public');
-            $item->images()->create(['image_url' => $path]);
+            $path = $file->store('items', 'public');
+            \DB::table('tb_item_images')->insert([
+                'item_id' => $item->id,
+                'image_url' => 'storage/' . $path,
+                'created_at' => now(),
+                'updated_at' => now(),
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id(),
+            ]);
         }
     }
-
 
 
     public function destroy($id)

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Item;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -32,10 +33,14 @@ class HomeController extends Controller
         $userRequests = collect();
 
         if ($user) {
+            // Lấy tất cả userRequests (không lọc status)
             $userRequests = \App\Models\Transaction::where('receiver_id', $user->id)->get();
-            $requestCount = $userRequests->count();
+            // Đếm các request có status = pending
+            $requestCount = $userRequests->where('request_status', 'pending')->count();
+            // Lấy danh sách item_id từ các yêu cầu (toàn bộ)
             $requestedItems = $userRequests->pluck('item_id')->toArray();
         }
+
 
         $searchResults = null;
         if ($query || $categoryId) {
@@ -54,8 +59,12 @@ class HomeController extends Controller
                     : null;
             });
         }
-
-        return view('home', compact('featuredItems', 'searchResults', 'requestCount', 'userRequests'));
+        $categoryName = null;
+        if ($categoryId) {
+            $category = Category::find($categoryId);
+            $categoryName = $category ? $category->name : null;
+        }
+        return view('home', compact('featuredItems', 'searchResults', 'requestCount', 'userRequests','categoryName'));
     }
 
 
@@ -64,13 +73,21 @@ class HomeController extends Controller
         $query = $request->input('query');
         $user = auth()->user();
         // Lấy danh sách ID các item mà user hiện tại đã gửi yêu cầu mượn
-        $userRequests = $user
-            ? Transaction::where('receiver_id', $user->id)->get()
-            : collect(); // Trả về empty collection nếu chưa login
-
-        $requestCount = $userRequests->count(); // Đếm trên Collection
-        $requestedItemIds = $userRequests->pluck('item_id')->toArray();
-
+        $requestedItems = [];
+        $requestCount = 0;
+        $userRequests = collect();
+        if ($user) {
+            // Lấy tất cả các transaction của user
+            $userRequests = Transaction::where('receiver_id', $user->id)->get();
+            // Đếm các transaction có status = 'pending'
+            $requestCount = $userRequests->where('request_status', 'pending')->count();
+            // Lấy danh sách item_id từ tất cả request
+            $requestedItemIds = $userRequests->pluck('item_id')->toArray();
+        } else {
+            $userRequests = collect(); // Trả về collection rỗng nếu chưa login
+            $requestCount = 0;
+            $requestedItemIds = [];
+        }
 
         // Tìm kiếm items
         $searchResults = Item::with(['user', 'category', 'images'])
@@ -131,7 +148,6 @@ class HomeController extends Controller
     protected function getFeaturedItems()
     {
         return Item::with(['user', 'category', 'images'])
-//            ->where('is_featured', true)
             ->latest()
             ->take(4)
             ->get()

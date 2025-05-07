@@ -8,6 +8,7 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TransactionController extends Controller
 {
@@ -28,10 +29,9 @@ class TransactionController extends Controller
 
         // Tạo transaction mới
         $transaction = Transaction::create([
-            'giver_id' => $item->user_id, // Người cho mượn
-            'receiver_id' => Auth::id(), // Người mượn (người đăng nhập)
+            'giver_id' => $item->user_id,
+            'receiver_id' => Auth::id(),
             'item_id' => $item->id,
-            'status' => 'pending', // Trạng thái giao dịch
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
             'borrower_name' => $request->borrower_name,
@@ -40,39 +40,46 @@ class TransactionController extends Controller
             'end_date' => $request->end_date,
             'purpose' => $request->purpose,
             'message' => $request->message,
-            'request_status' => 'pending', // Trạng thái yêu cầu
+            'request_status' => 'pending',
         ]);
 
-        // Cập nhật trạng thái item nếu cần
-        $item->update(['status' => 'pending']);
-
         // Gửi thông báo cho người cho mượn
-//        $item->user->notify(new NewBorrowRequest($transaction));
-        return redirect()->back()->with('success', 'Yêu cầu mượn đã được gửi thành công!');
+        Log::info(' send borrow emails: ' . $transaction);
+        $emailService = app('email-service');
+        $emailService->sendBorrowRequestNotification($transaction);
+        return redirect()->back()->with('success', 'Borrow request has been sent successfully!');
     }
 
-//    public function index(Request $request)
-//    {
-//        $user = auth()->user();
-//
-//        $transactions = Transaction::query()
-//            ->with(['item', 'giver', 'receiver', 'item.category'])
-//            ->when($request->tab === 'requests', function ($query) use ($user) {
-//                // Chỉ lấy các request mà user hiện tại là người yêu cầu
-//                return $query->where('receiver_id', $user->id);
-//            }, function ($query) use ($user) {
-//                // Mặc định lấy tất cả transactions liên quan đến user
-//                return $query->where(function($q) use ($user) {
-//                    $q->where('giver_id', $user->id)
-//                        ->orWhere('receiver_id', $user->id);
-//                });
-//            })
-//            ->orderBy('created_at', 'desc')
-//            ->paginate(10);
-//
-//        return view('transactions.index', compact('transactions'));
-//    }
-// In your TransactionController or relevant controller
+    /**
+     * Gửi email thông báo mượn đồ
+     *
+     * @param Transaction $transaction
+     */
+    protected function sendBorrowEmails(Transaction $transaction)
+    {
+        try {
+            // Gửi email cho người cho mượn (chủ đồ)
+            Mail::to($transaction->giver->email)
+                ->send(new ItemBorrowedNotification($transaction));
+
+            // Gửi email cho người mượn
+            if ($transaction->receiver) {
+                Mail::to($transaction->receiver->email)
+                    ->send(new ItemBorrowedNotification($transaction));
+            } else {
+                // Nếu người mượn không có tài khoản, gửi đến contact_info
+                if (filter_var($transaction->contact_info, FILTER_VALIDATE_EMAIL)) {
+                    Mail::to($transaction->contact_info)
+                        ->send(new ItemBorrowedNotification($transaction));
+                }
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Failed to send borrow emails: ' . $e->getMessage());
+            Log::error($e);
+        }
+    }
+
     public function index(Request $request)
     {
         $tab = $request->query('tab', 'transactions');
@@ -81,6 +88,9 @@ class TransactionController extends Controller
 
         if ($tab === 'requests') {
             $transactions = Transaction::where('receiver_id', $user->id)
+                ->whereHas('item', function ($query) {
+                    $query->where('del_flag', false);
+                })
                 ->with(['item', 'giver', 'receiver'])
                 ->latest()
                 ->paginate(10);
@@ -99,6 +109,9 @@ class TransactionController extends Controller
             ]);
         } else {
             $transactions = Transaction::where('giver_id', $user->id)
+                ->whereHas('item', function ($query) {
+                    $query->where('del_flag', false);
+                })
                 ->with(['item', 'giver', 'receiver'])
                 ->latest()
                 ->paginate(10);
@@ -143,14 +156,7 @@ class TransactionController extends Controller
             $transaction->item->update([
                 'status' => 'borrowed'
             ]);
-
-            // Send notification to receiver
-//            NotificationService::send(
-//                $transaction->receiver,
-//                'transaction_approved',
-//                "Your request for '{$transaction->item->name}' has been approved!",
-//                $transaction
-//            );
+            app('email-service')->sendBorrowApprovedNotification($transaction);
         });
 
         return redirect()->back()->with('success', 'Transaction approved successfully!');

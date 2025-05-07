@@ -28,7 +28,7 @@
 
         @if($items->isEmpty())
             <div class="bg-blue-100 text-blue-800 p-4 rounded-lg">
-                Không có item nào cần duyệt.
+                No items to approve.
             </div>
         @else
             <div class="overflow-x-auto bg-white rounded-lg shadow">
@@ -49,7 +49,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm {{ $item->del_flag ? 'text-gray-400' : 'text-gray-900' }}">
                                 {{ $item->id }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm {{ $item->del_flag ? 'text-gray-400' : 'text-gray-900' }}">
+                            <td class="px-6 py-4 text-sm break-words whitespace-normal max-w-xs {{ $item->del_flag ? 'text-gray-400' : 'text-gray-900' }}">
                                 {{ $item->name }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm {{ $item->del_flag ? 'text-gray-400' : 'text-gray-900' }}">
@@ -75,33 +75,6 @@
                                         </span>
                                 @endif
                             </td>
-{{--                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">--}}
-{{--                                <div class="flex space-x-2">--}}
-{{--                                    @if(!$item->del_flag)--}}
-{{--                                        @if($item->status === 'submit')--}}
-{{--                                        <form method="POST" action="{{ route('admin.items.approve', $item) }}">--}}
-{{--                                            @csrf--}}
-{{--                                            <button type="submit"--}}
-{{--                                                    class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">--}}
-{{--                                                Approve--}}
-{{--                                            </button>--}}
-{{--                                        </form>--}}
-{{--                                        @endif--}}
-{{--                                    @endif--}}
-{{--                                    @if(!$item->del_flag)--}}
-{{--                                        <form method="POST" action="{{ route('admin.items.destroy', $item) }}">--}}
-{{--                                            @csrf--}}
-{{--                                            <button type="submit"--}}
-{{--                                                    class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"--}}
-{{--                                                    onclick="return confirm('Are you sure you want to delete this item?')">--}}
-{{--                                                --}}{{--                                            <i class="fas fa-trash-alt"></i>--}}
-{{--                                                Delete--}}
-{{--                                            </button>--}}
-{{--                                        </form>--}}
-{{--                                    @endif--}}
-
-{{--                                </div>--}}
-{{--                            </td>--}}
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex justify-end space-x-2">
                                     @if(!$item->del_flag)
@@ -115,9 +88,10 @@
                                             </form>
                                         @endif
                                     @endif
-                                    @if(!$item->del_flag)
+                                    @if(!$item->del_flag && $item->status != 'borrowed')
                                         <form method="POST" action="{{ route('admin.items.destroy', $item) }}">
                                             @csrf
+                                            @method('DELETE')
                                             <button type="submit"
                                                     class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
                                                     onclick="return confirm('Are you sure you want to delete this item?')">
@@ -133,9 +107,6 @@
                 </table>
             </div>
 
-{{--            <div class="mt-4">--}}
-{{--                {{ $items->withQueryString()->links() }}--}}
-{{--            </div>--}}
         @endif
     </div>
 @endsection

@@ -4,7 +4,7 @@
     <h2>Kết quả tìm kiếm cho: "{{ $query }}"</h2>
 
     @if($items->isEmpty())
-        <p>Không tìm thấy kết quả.</p>
+        <p>No results found.</p>
     @else
         <div class="grid">
             @foreach($items as $item)

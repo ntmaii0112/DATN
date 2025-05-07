@@ -2,7 +2,7 @@
     <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
         <div class="p-6">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-green-700" id="modalItemTitle">Yêu cầu mượn: </h3>
+                <h3 class="text-xl font-bold text-green-700" id="modalItemTitle">Borrow request: </h3>
                 <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -16,14 +16,14 @@
 
                 <!-- Thông tin người mượn -->
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="borrower_name">Họ và tên *</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="borrower_name">Full name *</label>
                     <input type="text" id="borrower_name" name="borrower_name" required
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                            value="{{ Auth::user()->name ?? '' }}">
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="contact_info">Email/SĐT liên hệ *</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="contact_info">Email/Phone contact *</label>
                     <input type="text" id="contact_info" name="contact_info" required
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                            value="{{ Auth::user()->email ?? '' }}">
@@ -31,15 +31,15 @@
 
                 <!-- Thông tin mượn -->
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Thời gian mượn *</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Borrowing duration? *</label>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-gray-500 text-xs mb-1">Từ ngày</label>
+                            <label class="block text-gray-500 text-xs mb-1">Start date</label>
                             <input type="date" name="start_date" required min="{{ date('Y-m-d') }}"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600">
                         </div>
                         <div>
-                            <label class="block text-gray-500 text-xs mb-1">Đến ngày</label>
+                            <label class="block text-gray-500 text-xs mb-1">End date</label>
                             <input type="date" name="end_date" required
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600">
                         </div>
@@ -47,19 +47,19 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="purpose">Mục đích sử dụng *</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="purpose">Purpose of use? *</label>
                     <select id="purpose" name="purpose" required
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600">
-                        <option value="">-- Chọn mục đích --</option>
-                        <option value="Học tập">Học tập</option>
-                        <option value="Ôn thi">Ôn thi</option>
-                        <option value="Dự án">Dự án</option>
-                        <option value="Khác">Khác</option>
+                        <option value="">-- Purpose of use? --</option>
+                        <option value="Học tập">Studying</option>
+                        <option value="Ôn thi">Exam preparation</option>
+                        <option value="Dự án">Project</option>
+                        <option value="Khác">Other</option>
                     </select>
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="message">Lời nhắn cho người cho mượn</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="message">Note to the lender?</label>
                     <textarea id="message" name="message" rows="3"
                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                               placeholder="Xin vui lòng cho mình mượn..."></textarea>
@@ -76,7 +76,7 @@
                 <div class="flex justify-end">
                     <button type="button" onclick="closeModal()"
                             class="mr-2 px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition">
-                        Hủy
+                        Cancel
                     </button>
                     <button type="submit"
                             class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
@@ -91,7 +91,7 @@
 <script>
     function openModal(itemId, itemName) {
         document.getElementById('modalItemId').value = itemId;
-        document.getElementById('modalItemTitle').textContent = 'Yêu cầu mượn: ' + itemName;
+        document.getElementById('modalItemTitle').textContent = 'Borrow request: ' + itemName;
         document.getElementById('borrowRequestModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
 
@@ -118,12 +118,12 @@
         const endDate = new Date(this.end_date.value);
 
         if (endDate <= startDate) {
-            alert('Ngày kết thúc phải sau ngày bắt đầu');
+            alert('The end date must be after the start date.');
             return;
         }
 
         if (!this.purpose.value) {
-            alert('Vui lòng chọn mục đích sử dụng');
+            alert('Please select the purpose of use');
             return;
         }
 

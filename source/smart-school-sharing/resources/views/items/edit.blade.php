@@ -49,7 +49,7 @@
                     <div class="grid grid-cols-3 gap-4">
                         @foreach($item->images as $image)
                             <div class="relative group" data-image-id="{{ $image->id }}">
-                                <img src="{{ asset('storage/'.$image->image_url) }}"
+                                <img src="{{ asset('/'.$image->image_url) }}"
                                      class="h-32 w-full object-cover rounded border">
                                 <button type="button"
                                         @click="deleteExistingImage('{{ $image->id }}')"
@@ -61,7 +61,6 @@
                     </div>
                 </div>
 
-                <!-- File Input for New Images -->
                 <input type="file" name="images[]" multiple accept="image/*" class="hidden"
                        x-ref="fileInput" @change="handleFileSelect($event)">
 
@@ -155,7 +154,6 @@
                     deleteExistingImage(imageId) {
                         if (confirm('Are you sure you want to delete this image?')) {
                             this.deletedImageIds.push(imageId);
-                            // Ẩn ảnh trên giao diện
                             document.querySelector(`[data-image-id="${imageId}"]`).remove();
                         }
                     },
