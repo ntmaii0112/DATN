@@ -70,8 +70,10 @@ class ItemController extends Controller
             'item_condition' => 'required|in:new,used',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'deleted_image_ids' => 'nullable|string',
+            'deposit_amount' => 'required|numeric|min:0',
         ]);
-
+        // Set status to 'submit' before updating
+        $validated['status'] = 'submit';
         $item->update($validated);
         // Xử lý ảnh bị xóa (chỉ đánh dấu, không xóa trực tiếp ở đây)
         if ($request->filled('deleted_image_ids')) {
@@ -193,8 +195,8 @@ class ItemController extends Controller
             'description' => 'nullable|string',
             'category_id' => 'required|exists:tb_categories,id',
             'item_condition' => 'required|in:new,used',
-//            'status' => 'required|in:available,unavailable',
             'images.*' => 'nullable|image|max:2048', // 2MB mỗi ảnh
+            'deposit_amount' => 'required|numeric|min:0',
         ]);
 
         $item = Item::create([
@@ -203,6 +205,7 @@ class ItemController extends Controller
             'description' => $request->description,
             'category_id' => $request->category_id,
             'item_condition' => $request->item_condition,
+            'deposit_amount' => $request->deposit_amount,
             'status' => 'submit',
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),

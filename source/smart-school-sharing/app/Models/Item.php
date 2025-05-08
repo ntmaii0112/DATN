@@ -12,7 +12,7 @@ class Item extends Model
     protected $table = 'tb_items';
     protected $fillable = [
         'user_id', 'name', 'description', 'category_id',
-        'item_condition', 'status', 'created_by', 'updated_by',
+        'item_condition', 'status', 'created_by', 'updated_by','deposit_amount'
     ];
 
     public function user()
@@ -40,5 +40,9 @@ class Item extends Model
         static::addGlobalScope('not_deleted', function ($query) {
             $query->where('del_flag', false);
         });
+    }
+    public function rejections()
+    {
+        return $this->hasMany(ItemRejection::class, 'item_id');
     }
 }

@@ -76,7 +76,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex justify-end space-x-2">
+                                <div class="flex space-x-2">
                                     @if(!$item->del_flag)
                                         @if($item->status === 'submit')
                                             <form method="POST" action="{{ route('admin.items.approve', $item) }}">
@@ -84,6 +84,13 @@
                                                 <button type="submit"
                                                         class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                                                     Approve
+                                                </button>
+                                            </form>
+                                            <!-- Reject button with modal trigger -->
+                                            <form onsubmit="openRejectModal({{ $item->id }}); return false;">
+                                                <button type="submit"
+                                                        class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
+                                                    Reject
                                                 </button>
                                             </form>
                                         @endif
@@ -110,3 +117,39 @@
         @endif
     </div>
 @endsection
+<!-- Modal -->
+<div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+    <div class="bg-white rounded shadow-lg p-6 w-full max-w-md">
+        <h2 class="text-lg font-semibold mb-4 text-red-600">Reject Item</h2>
+        <form method="POST" id="rejectForm">
+            @csrf
+            <input type="hidden" name="item_id" id="rejectItemId">
+            <label class="block mb-2 font-medium">Reason for rejection:</label>
+            <textarea name="reason" required rows="4"
+                      class="w-full border border-gray-300 rounded p-2 mb-4"></textarea>
+
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeRejectModal()"
+                        class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+                <button type="submit"
+                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openRejectModal(itemId) {
+        document.getElementById('rejectItemId').value = itemId;
+        const form = document.getElementById('rejectForm');
+        form.action = `/admin/items/${itemId}/reject`; // Route giả lập
+        document.getElementById('rejectModal').classList.remove('hidden');
+        document.getElementById('rejectModal').classList.add('flex');
+    }
+
+    function closeRejectModal() {
+        document.getElementById('rejectModal').classList.remove('flex');
+        document.getElementById('rejectModal').classList.add('hidden');
+    }
+</script>
+

@@ -34,6 +34,12 @@
                 </select>
             </div>
 
+            <div class="mb-4">
+                <label class="block font-semibold mb-1">Deposit Amount (VND)</label>
+                <input type="number" name="deposit_amount" min="0" class="w-full border rounded p-2" value="0" required>
+            </div>
+
+
 
             <div class="mb-6" x-data="fileUpload()">
                 <label class="block font-semibold mb-2 text-gray-700">Images (Multiple)</label>

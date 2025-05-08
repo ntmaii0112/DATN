@@ -39,8 +39,6 @@ Route::get('/search', [HomeController::class, 'search'])->name('items.search');
 
 // Items
 Route::prefix('items')->controller(ItemController::class)->group(function () {
-    Route::get('/create', 'create')->name('items.create');
-    Route::post('/', 'store')->name('items.store');
     Route::get('/category/{id}', 'itemsByCategory')->name('items.byCategory');
     Route::get('/{id}', 'show')->where('id', '[0-9]+')->name('items.show');
 });
@@ -49,8 +47,10 @@ Route::get('/api/featured-items', [HomeController::class, 'loadFeaturedItems'])-
 
 // Transactions (cần đăng nhập)
 Route::middleware(['auth'])->group(function () {
-    Route::get('/transactions', [TransactionController::class, 'index'])
-        ->name('transactions.index');
+//    Route::post('items/', 'store')->name('items.store');
+    Route::get('items/create', [ItemController::class, 'create'])->name('items.create');
+    Route::post('items', [ItemController::class, 'store'])->name('items.store');
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::post('/transactions', [TransactionController::class, 'storeBorrowRequest'])->name('borrow-requests.store');
     Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
     Route::post('/transactions/{transaction}/approve', [TransactionController::class, 'approve'])->name('transactions.approve');
@@ -94,6 +94,7 @@ Route::prefix('admin')
             Route::get('/', [AdminItemController::class, 'index'])->name('index');
             Route::post('/{item}/approve', [AdminItemController::class, 'approve'])->name('approve');
             Route::delete('/{item}', [AdminItemController::class, 'destroy'])->name('destroy');
+            Route::post('/{item}/reject', [AdminItemController::class, 'reject'])->name('admin.items.reject');
 
         });
     });

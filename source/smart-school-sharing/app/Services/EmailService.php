@@ -85,4 +85,43 @@ class EmailService {
         }
     }
 
+    public function sendItemRejectedNotification($item, $reason)
+    {
+        try {
+            if (!$item->relationLoaded('user')) {
+                $item->load('user');
+            }
+
+            // Kiểm tra user tồn tại
+            if (!$item->user) {
+                \Log::error('Cannot send rejection email - no user associated with item', [
+                    'item_id' => $item->id
+                ]);
+                return false;
+            }
+
+            Log::info("Preparing to send item rejection email", [
+                'to' => $item->user->email,
+                'subject' => "Your item '{$item->name}' has been rejected",
+                'item_id' => $item->id,
+                'reason' => $reason,
+                'user' => $item->user,
+            ]);
+
+            return $this->send(
+                $item->user->email,
+                'item_rejected', // view: resources/views/emails/item_rejected.blade.php
+                [
+                    'subject' => "Your item '{$item->name}' has been rejected",
+                    'item' => $item,
+                    'user' => $item->user,
+                    'reason' => $reason
+                ]
+            );
+        } catch (\Exception $e) {
+            Log::error("Send reject email failed: " . $e->getMessage());
+            return false;
+        }
+    }
+
 }

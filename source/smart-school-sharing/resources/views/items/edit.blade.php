@@ -39,8 +39,14 @@
                     <option value="used" {{ $item->item_condition == 'used' ? 'selected' : '' }}>Used</option>
                 </select>
             </div>
+            <div class="mb-4">
+                <label class="block font-semibold mb-1">Deposit Amount (VND)</label>
+                <input type="number" name="deposit_amount" min="0" class="w-full border rounded p-2"
+                       value="{{ old('deposit_amount', $item->deposit_amount) }}" required>
+            </div>
 
             <div class="mb-6" x-data="fileUpload()">
+                <input type="hidden" name="deleted_image_ids" :value="JSON.stringify(deletedImageIds)">
                 <label class="block font-semibold mb-2 text-gray-700">Images</label>
 
                 <!-- Current Images -->
@@ -105,7 +111,7 @@
                     Update Item
                 </button>
             </div>
-            <input type="hidden" name="deleted_image_ids" x-model="deletedImageIds">
+
         </form>
 
         <script>
@@ -157,7 +163,6 @@
                             document.querySelector(`[data-image-id="${imageId}"]`).remove();
                         }
                     },
-
                     updateFileInput() {
                         const input = this.$refs.fileInput;
                         const dataTransfer = new DataTransfer();

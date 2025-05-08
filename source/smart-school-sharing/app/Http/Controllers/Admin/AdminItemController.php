@@ -49,5 +49,55 @@ class AdminItemController extends Controller
         }
     }
 
+    public function reject(Request $request, Item $item)
+    {
+        $validated = $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+        $item->load('user');
+
+        if (!$item->user) {
+            return back()
+                ->with('error', 'Cannot reject item - no user associated');
+        }
+
+        try {
+            \DB::transaction(function () use ($item, $validated) {
+                // Cập nhật trạng thái item
+                $item->update([
+                    'status' => 'rejected',
+                    'updated_at' => now(),
+                ]);
+
+                // Lưu lý do từ chối
+                \DB::table('tb_item_rejections')->insert([
+                    'item_id' => $item->id,
+                    'reason' => $validated['reason'],
+                    'rejected_by' => auth()->id(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            });
+
+            // Gửi email thông báo
+            Log::info("item : " . $item);
+            $emailService = app('email-service');
+            $emailSent = $emailService->sendItemRejectedNotification($item, $validated['reason']);
+
+            return redirect()
+                ->route('admin.items.index')
+                ->with('success', 'Item rejected successfully.')
+                ->with('email_sent', $emailSent);
+
+        } catch (\Exception $e) {
+            \Log::error('Item rejection failed: ' . $e->getMessage());
+
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to reject item. Please try again.');
+        }
+    }
+
+
 
 }

@@ -89,6 +89,10 @@
                         {{ ucfirst($item->status) }}
                     </span>
                 </div>
+                <div class="flex items-center">
+                    <span class="w-24 font-semibold">Deposit:</span>
+                    <span>{{ number_format($item->deposit_amount) }} VND</span>
+                </div>
 
                 <div class="flex items-center">
                     <span class="w-24 font-semibold">Shared by:</span>
