@@ -39,6 +39,8 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Condition</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deposit</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -49,14 +51,25 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm {{ $item->del_flag ? 'text-gray-400' : 'text-gray-900' }}">
                                 {{ $item->id }}
                             </td>
+{{--                            <td class="px-6 py-4 text-sm break-words whitespace-normal max-w-xs {{ $item->del_flag ? 'text-gray-400' : 'text-gray-900' }}">--}}
+{{--                                {{ $item->name }}--}}
+{{--                            </td>--}}
                             <td class="px-6 py-4 text-sm break-words whitespace-normal max-w-xs {{ $item->del_flag ? 'text-gray-400' : 'text-gray-900' }}">
-                                {{ $item->name }}
+                                <a href="{{ route('admin.items.show', $item) }}" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                    {{ $item->name }}
+                                </a>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm {{ $item->del_flag ? 'text-gray-400' : 'text-gray-900' }}">
                                 {{ $item->user->name ?? 'N/A' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm {{ $item->del_flag ? 'text-gray-400' : 'text-gray-900' }}">
                                 {{ $item->category->name ?? 'N/A' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm {{ $item->del_flag ? 'text-gray-400' : 'text-gray-900' }}">
+                                {{ $item->item_condition }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm {{ $item->del_flag ? 'text-gray-400' : 'text-gray-900' }}">
+                                {{ number_format($item->deposit_amount, 2) }} (VND)
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item->del_flag)

@@ -46,8 +46,6 @@ class ItemController extends Controller
                 // Lấy danh sách item_id từ các yêu cầu (toàn bộ)
                 $requestedItems = $userRequests->pluck('item_id')->toArray();
             }
-
-
             return view('items.show', compact('item', 'images','requestCount', 'userRequests'));
 
         } catch (\Exception $e) {

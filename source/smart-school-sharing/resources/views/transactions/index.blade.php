@@ -204,6 +204,7 @@
                                 @php
                                     $statusClasses = [
                                         'pending' => 'bg-yellow-100 text-yellow-800',
+                                        'waiting_payment' => 'bg-purple-100 text-purple-800',
                                         'approved' => 'bg-blue-100 text-blue-800',
                                         'rejected' => 'bg-red-100 text-red-800',
                                         'cancelled' => 'bg-red-100 text-red-800',
@@ -230,7 +231,7 @@
                             </td>
 
                             <!-- Actions Column -->
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td class="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                                 <a href="{{ route('transactions.show', $transaction->id) }}"
                                    class="text-blue-600 hover:text-blue-900 mr-3">View</a>
 

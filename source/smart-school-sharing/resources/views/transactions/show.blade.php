@@ -10,11 +10,6 @@
                 <h3 class="text-lg font-semibold text-gray-700">Transaction Information</h3>
                 <ul class="list-none">
                     <li><strong>Transaction ID:</strong> {{ $transaction->id }}</li>
-                    <li><strong>Status:</strong>
-                        <span class="text-{{ $transaction->status == 'approved' ? 'green' : 'red' }}-600">
-                            {{ ucfirst($transaction->status) }}
-                        </span>
-                    </li>
                     <li><strong>Giver:</strong> {{ $giver->name }}</li>
                     <li><strong>Receiver:</strong> {{ $receiver->name }} </li>
                 </ul>

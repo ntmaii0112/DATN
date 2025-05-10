@@ -28,7 +28,11 @@ class Transaction extends Model
         'end_date',
         'purpose',
         'message',
-        'request_status'
+        'request_status',
+        'payment_status',
+        'payment_method',
+        'payment_reference',
+        'deposit_amount'
     ];
 
     public function item()

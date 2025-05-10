@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Report;
+use App\Models\User;
 use App\Services\ReportService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ReportController extends Controller
 {
@@ -24,10 +28,50 @@ class ReportController extends Controller
         return response()->json($this->service->findById($id));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, $reportedUserId)
     {
-        $data = $request->all();
-        return response()->json($this->service->create($data));
+        $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        // Check if the reported user exists
+        $reportedUser = User::findOrFail($reportedUserId);
+
+        // Prevent self-reporting
+        if (Auth::id() == $reportedUserId) {
+            return back()->with('error', 'You cannot report yourself.');
+        }
+
+        // Check for duplicate reports
+        $existingReport = Report::where('reporter_id', Auth::id())
+            ->where('reported_user_id', $reportedUserId)
+            ->where('status', 'pending')
+            ->first();
+        if ($existingReport) {
+            return back()->with('error', 'You have already submitted a report for this user.');
+        }
+        // Create report
+        $report = Report::create([
+            'reporter_id'      => Auth::id(),
+            'reported_user_id' => $reportedUserId,
+            'reason'           => $request->reason,
+            'status'           => 'pending',
+        ]);
+
+        // Send email notification
+//        try {
+//            Log::info("START SEND MAIL");
+//            $emailService = app('email-service');
+//            $emailSent = $emailService->sendUserReportNotification($report);
+//
+//            if (!$emailSent) {
+//                Log::warning("Failed to send report notification email for report #{$report->id}");
+//            }
+//        } catch (\Exception $e) {
+//            Log::error("Report notification failed: ".$e->getMessage());
+//        }
+
+        return back()->with('success', 'Your report has been submitted. Thank you.');
     }
 
     public function update(Request $request, $id)

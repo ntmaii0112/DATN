@@ -98,6 +98,15 @@ class AdminItemController extends Controller
         }
     }
 
+    public function show(Item $item)
+    {
+        // Load relationships and any rejection reason if exists
+        $item->load('user', 'category');
+        $rejectionReason = \DB::table('tb_item_rejections')
+            ->where('item_id', $item->id)
+            ->latest()
+            ->first();
 
-
+        return view('admin.items.show', compact('item', 'rejectionReason'));
+    }
 }

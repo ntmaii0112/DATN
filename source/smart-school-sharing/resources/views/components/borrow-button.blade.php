@@ -37,7 +37,7 @@
         @elseif($alreadyRequested)
             <span class="status-badge bg-yellow-100 text-yellow-800">
             <i class="fas fa-clock"></i>
-            <span class="truncate">borrowed</span>
+                <span class="truncate">{{ $userRequests->where('item_id', $item->id)->first()->request_status ?? 'pending' }}</span>
         </span>
         @else
             <span class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded">

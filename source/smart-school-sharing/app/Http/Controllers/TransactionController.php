@@ -8,6 +8,7 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class TransactionController extends Controller
@@ -23,11 +24,11 @@ class TransactionController extends Controller
             'purpose' => 'required|string|max:255',
             'message' => 'nullable|string',
             'agreement' => 'required|accepted',
+            'payment_method' => 'required|in:cash,momo',
         ]);
 
         $item = Item::findOrFail($request->item_id);
 
-        // Tạo transaction mới
         $transaction = Transaction::create([
             'giver_id' => $item->user_id,
             'receiver_id' => Auth::id(),
@@ -40,15 +41,87 @@ class TransactionController extends Controller
             'end_date' => $request->end_date,
             'purpose' => $request->purpose,
             'message' => $request->message,
-            'request_status' => 'pending',
+            'request_status' => 'waiting_payment',
+            'payment_status' => 'unpaid',
+            'payment_method' => $request->payment_method,
         ]);
 
-        // Gửi thông báo cho người cho mượn
-        Log::info(' send borrow emails: ' . $transaction);
+        if ($request->payment_method === 'momo') {
+            return $this->initiateMomoPayment($transaction);
+        }
+
+        // For cash payment, send notification immediately
+        $transaction->update(['request_status' => 'pending']);
         $emailService = app('email-service');
         $emailService->sendBorrowRequestNotification($transaction);
+
         return redirect()->back()->with('success', 'Borrow request has been sent successfully!');
     }
+    public function initiateMomoPayment($transaction)
+    {
+        $endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
+
+        // Sử dụng thông tin xác thực từ tài liệu của MoMo (Test credentials)
+        $partnerCode = "MOMOBKUN20180529"; // Mã đối tác
+        $accessKey = "klm05TvNBzhg7h7j"; // Khóa truy cập
+        $secretKey = "at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa"; // Khóa bí mật
+
+        $orderInfo = "Deposit for borrowing item: " . $transaction->item->name;
+        $amount = $transaction->item->deposit_amount ? $transaction->item->deposit_amount * 1000 : 10000; // Chuyển đổi sang VND (1000 VND = 1 nghìn đồng)
+        $orderId = $transaction->id . "_" . time();
+        $redirectUrl = route('momo.return');  // Địa chỉ trả về sau khi thanh toán
+        $ipnUrl = route('momo.notify');  // Địa chỉ nhận thông báo IPN
+        $requestId = time() . "";
+        $extraData = ""; // Dữ liệu bổ sung nếu có
+
+        // Tạo raw hash (chuỗi băm)
+        $rawHash = "accessKey=$accessKey&amount=$amount&extraData=$extraData&ipnUrl=$ipnUrl&orderId=$orderId&orderInfo=$orderInfo&partnerCode=$partnerCode&redirectUrl=$redirectUrl&requestId=$requestId&requestType=captureWallet";
+        $signature = hash_hmac("sha256", $rawHash, $secretKey);
+
+        // Dữ liệu gửi đi
+        $data = [
+            'partnerCode' => $partnerCode,
+            'partnerName' => "Test Partner",
+            'storeId' => "Store001",
+            'requestId' => $requestId,
+            'amount' => $amount,
+            'orderId' => $orderId,
+            'orderInfo' => $orderInfo,
+            'redirectUrl' => $redirectUrl,
+            'ipnUrl' => $ipnUrl,
+            'lang' => 'vi',
+            'extraData' => $extraData,
+            'requestType' => 'captureWallet',
+            'signature' => $signature
+        ];
+
+        // Gửi yêu cầu đến MoMo
+        $response = Http::post($endpoint, $data);
+
+        // Kiểm tra nếu yêu cầu thành công và có URL thanh toán trả về
+        if ($response->successful() && isset($response['payUrl'])) {
+            return redirect($response['payUrl']);
+        } else {
+            // Nếu yêu cầu thất bại, ghi log chi tiết lỗi
+            // Nếu MoMo trả về lỗi, ghi lại thông tin lỗi chi tiết và thông báo cho người dùng
+            Log::error('MoMo payment initiation failed', [
+                'response' => $response->json(),
+                'status' => $response->status(),
+                'transaction_id' => $transaction->id,
+                'request_data' => $data,
+                'error_message' => $response->json()['message'] // Thêm thông điệp lỗi từ MoMo
+            ]);
+            // Trả về lỗi cho người dùng với thông điệp rõ ràng hơn
+            return redirect()->back()
+                ->with('error', 'Could not initiate payment. QR code creation failed. Please try again later.');
+
+
+            // Trả về lỗi cho người dùng
+            return redirect()->back()
+                ->with('error', 'Could not initiate payment. Please try again later.');
+        }
+    }
+
 
     /**
      * Gửi email thông báo mượn đồ

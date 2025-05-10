@@ -96,7 +96,13 @@
 
                 <div class="flex items-center">
                     <span class="w-24 font-semibold">Shared by:</span>
-                    <span>{{ $item->user->name ?? 'Unknown' }}</span>
+                    @if($item->user)
+                        <a href="{{ route('users.show', $item->user->id) }}" class="text-green-700 hover:underline">
+                            {{ $item->user->name }}
+                        </a>
+                    @else
+                        <span>Unknown</span>
+                    @endif
                 </div>
             </div>
 

@@ -24,7 +24,7 @@ return new class extends Migration
             $table->date('end_date')->nullable();
             $table->string('purpose')->nullable();
             $table->text('message')->nullable();
-            $table->enum('request_status', ['pending', 'approved', 'rejected', 'completed'])->default('pending');
+            $table->enum('request_status', ['waiting_payment','pending', 'approved', 'rejected','cancelled', 'completed'])->default('pending');
 
             $table->timestamps();
 

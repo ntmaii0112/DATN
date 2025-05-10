@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 
@@ -21,8 +22,17 @@ class UserController extends Controller
 
     public function show($id)
     {
-        return response()->json($this->service->findById($id));
+        $user = User::with(['items.images'])->findOrFail($id);
+
+        // Gắn first_image_url vào mỗi item (nếu có image)
+        $user->items->each(function ($item) {
+            $item->first_image_url = $item->images->isNotEmpty()
+                ? asset('' . ltrim($item->images->first()->image_url, '/'))
+                : null;
+        });
+        return view('users.show', compact('user'));
     }
+
 
     public function store(Request $request)
     {

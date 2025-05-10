@@ -124,4 +124,38 @@ class EmailService {
         }
     }
 
+    public function sendUserReportNotification(Report $report)
+    {
+        $adminEmail = config('mail.admin_address');
+
+        if (empty($adminEmail)) {
+            Log::error('Admin email address is not configured');
+            return false;
+        }
+
+        try {
+            $reporter = $report->reporter;
+            $reportedUser = $report->reported;
+
+            if (!$reporter || !$reportedUser) {
+                Log::error("Invalid reporter or reported user for report #{$report->id}");
+                return false;
+            }
+
+            return $this->send(
+                $adminEmail,
+                'user_reported',
+                [
+                    'subject'  => "New User Report (#{$report->id})",
+                    'report'   => $report,
+                    'reporter' => $reporter,
+                    'reported' => $reportedUser,
+                ]
+            );
+        } catch (\Exception $e) {
+            Log::error("User report email failed for report #{$report->id}: ".$e->getMessage());
+            return false;
+        }
+    }
+
 }

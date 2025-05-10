@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\AdminItemController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\ItemImageController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ItemController;
@@ -47,6 +49,13 @@ Route::get('/api/featured-items', [HomeController::class, 'loadFeaturedItems'])-
 
 // Transactions (cần đăng nhập)
 Route::middleware(['auth'])->group(function () {
+    Route::get('/momo/return', [PaymentController::class, 'handleReturn'])->name('momo.return');
+    Route::post('/momo/notify', [PaymentController::class, 'handleNotify'])->name('momo.notify');
+    Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
+    // Khi user bấm nút “Report this user”
+    Route::middleware('auth')
+        ->post('/users/{reported}/report', [\App\Http\Controllers\ReportController::class, 'store'])
+        ->name('users.report');
 //    Route::post('items/', 'store')->name('items.store');
     Route::get('items/create', [ItemController::class, 'create'])->name('items.create');
     Route::post('items', [ItemController::class, 'store'])->name('items.store');
@@ -95,7 +104,7 @@ Route::prefix('admin')
             Route::post('/{item}/approve', [AdminItemController::class, 'approve'])->name('approve');
             Route::delete('/{item}', [AdminItemController::class, 'destroy'])->name('destroy');
             Route::post('/{item}/reject', [AdminItemController::class, 'reject'])->name('admin.items.reject');
-
+            Route::get('/{item}', [AdminItemController::class, 'show'])->name('show');
         });
     });
 require __DIR__ . '/auth.php';
