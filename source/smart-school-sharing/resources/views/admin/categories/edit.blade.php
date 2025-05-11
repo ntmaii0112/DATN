@@ -17,6 +17,10 @@
                 <label class="block text-gray-700 font-bold mb-2">Mô tả</label>
                 <textarea name="description" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600">{{ old('description', $category->description) }}</textarea>
             </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Icon (emoji or Font Awesome)</label>
+                <input type="text" name="icon" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" value="{{ old('icon', $category->icon ?? '') }}">
+            </div>
 
             <div class="flex justify-end">
                 <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Cập nhật</button>

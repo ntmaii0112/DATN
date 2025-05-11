@@ -51,7 +51,7 @@
                             </svg>
                             <div>
                                 <h3 class="font-bold text-gray-800">Address</h3>
-                                <p class="text-gray-600">123 Education Street, Hanoi, Vietnam</p>
+                                <p class="text-gray-600">Address: {{ config('contact.address') }}</p>
                             </div>
                         </div>
                         <div class="flex items-start">
@@ -60,7 +60,7 @@
                             </svg>
                             <div>
                                 <h3 class="font-bold text-gray-800">Phone</h3>
-                                <p class="text-gray-600">+84 00123 456 789</p>
+                                <p class="text-gray-600">Phone: {{ config('contact.phone') }}</p>
                             </div>
                         </div>
                         <div class="flex items-start">
@@ -69,7 +69,7 @@
                             </svg>
                             <div>
                                 <h3 class="font-bold text-gray-800">Email</h3>
-                                <p class="text-gray-600">thanhmai2@gmail.com</p>
+                                <p class="text-gray-600">{{ config('mail.admin_address') }}</p>
                             </div>
                         </div>
                     </div>

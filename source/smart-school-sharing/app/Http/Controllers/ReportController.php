@@ -39,6 +39,7 @@ class ReportController extends Controller
 
         // Prevent self-reporting
         if (Auth::id() == $reportedUserId) {
+            Log::warning("User #".Auth::id()." attempted to report themselves");
             return back()->with('error', 'You cannot report yourself.');
         }
 
@@ -47,9 +48,12 @@ class ReportController extends Controller
             ->where('reported_user_id', $reportedUserId)
             ->where('status', 'pending')
             ->first();
+
         if ($existingReport) {
+            Log::warning("Duplicate report attempt by user #".Auth::id()." for user #".$reportedUserId);
             return back()->with('error', 'You have already submitted a report for this user.');
         }
+
         // Create report
         $report = Report::create([
             'reporter_id'      => Auth::id(),
@@ -58,19 +62,27 @@ class ReportController extends Controller
             'status'           => 'pending',
         ]);
 
-        // Send email notification
-//        try {
-//            Log::info("START SEND MAIL");
-//            $emailService = app('email-service');
-//            $emailSent = $emailService->sendUserReportNotification($report);
-//
-//            if (!$emailSent) {
-//                Log::warning("Failed to send report notification email for report #{$report->id}");
-//            }
-//        } catch (\Exception $e) {
-//            Log::error("Report notification failed: ".$e->getMessage());
-//        }
+        Log::info("Report #{$report->id} created by user #".Auth::id()." against user #{$reportedUserId}");
 
+        // Send email notification
+        try {
+            Log::info("Attempting to send report notification email for report #{$report->id}");
+            $emailService = app('email-service');
+            $emailSent = $emailService->sendUserReportNotification($report);
+
+            if ($emailSent) {
+                Log::info("Report notification email successfully sent for report #{$report->id}");
+            } else {
+                Log::warning("Failed to send report notification email for report #{$report->id}");
+            }
+        } catch (\Exception $e) {
+            Log::error("Report notification failed for report #{$report->id}: ".$e->getMessage(), [
+                'exception' => $e,
+                'report_id' => $report->id,
+                'reporter_id' => Auth::id(),
+                'reported_user_id' => $reportedUserId
+            ]);
+        }
         return back()->with('success', 'Your report has been submitted. Thank you.');
     }
 

@@ -64,7 +64,8 @@ class HomeController extends Controller
             $category = Category::find($categoryId);
             $categoryName = $category ? $category->name : null;
         }
-        return view('home', compact('featuredItems', 'searchResults', 'requestCount', 'userRequests','categoryName'));
+        $categories = Category::all();
+        return view('home', compact('featuredItems', 'searchResults', 'requestCount', 'userRequests','categoryName','categories'));
     }
 
 

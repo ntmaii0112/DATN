@@ -99,7 +99,7 @@
                                     @if($item->del_flag == 0)
                                         <a href="{{ route('items.show', $item->id) }}"
                                            class="text-blue-600 hover:text-blue-900 mr-3">View</a>
-                                        @if($item->status === 'submit')
+                                        @if($item->status === 'submit' || $item->status === 'rejected')
                                             <a href="{{ route('items.edit', $item->id) }}"
                                                class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
                                             <form action="{{ route('items.destroy', $item->id) }}" method="POST"
@@ -187,18 +187,24 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
                                     @if($transaction->giver_id == auth()->id())
-                                        {{ $transaction->receiver->name }}
+                                        @if($transaction->receiver)
+                                            <a href="{{ route('users.show', $transaction->receiver->id) }}" class="text-green-700 hover:underline">
+                                                {{ $transaction->receiver->name }}
+                                            </a>
+                                        @else
+                                            <span>Unknown</span>
+                                        @endif
                                     @else
-                                        {{ $transaction->giver->name }}
-                                    @endif
-                                </div>
-                                <div class="text-sm text-gray-500">
-                                    @if($transaction->giver_id == auth()->id())
-                                        {{ $transaction->borrower_name ?? 'N/A' }}
+                                        @if($transaction->giver)
+                                            <a href="{{ route('users.show', $transaction->giver->id) }}" class="text-green-700 hover:underline">
+                                                {{ $transaction->giver->name }}
+                                            </a>
+                                        @else
+                                            <span>Unknown</span>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
-
                             <!-- Status Column -->
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php

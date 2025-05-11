@@ -100,13 +100,21 @@ class AdminItemController extends Controller
 
     public function show(Item $item)
     {
-        // Load relationships and any rejection reason if exists
-        $item->load('user', 'category');
+        // Load relationships: user, category, images
+        $item->load(['user', 'category', 'images']);
+
+        // Lấy danh sách ảnh và chuyển sang dạng đường dẫn đầy đủ
+        $images = $item->images->map(function($img) {
+            return asset('' . ltrim($img->image_url, '/'));
+        })->toArray();
+
+        // Lấy lý do từ chối gần nhất (nếu có)
         $rejectionReason = \DB::table('tb_item_rejections')
             ->where('item_id', $item->id)
             ->latest()
             ->first();
-
-        return view('admin.items.show', compact('item', 'rejectionReason'));
+        // Truyền thêm $images vào view
+        return view('admin.items.show', compact('item', 'rejectionReason', 'images'));
     }
+
 }

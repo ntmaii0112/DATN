@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Contact;
+use App\Models\Report;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -126,10 +128,10 @@ class EmailService {
 
     public function sendUserReportNotification(Report $report)
     {
-        $adminEmail = config('mail.admin_address');
+        $adminEmail = config('mail.admin_address') ?? config('mail.from.address');
 
         if (empty($adminEmail)) {
-            Log::error('Admin email address is not configured');
+            Log::error('No email address available for report notification');
             return false;
         }
 
@@ -142,20 +144,68 @@ class EmailService {
                 return false;
             }
 
+            // Log the email details before sending
+            Log::info("Preparing to send user report notification", [
+                'to' => $adminEmail,
+                'subject' => "New User Report (#{$report->id})",
+                'report_id' => $report->id,
+                'reporter_name' => $reporter->name,
+                'reported_name' => $reportedUser->name
+            ]);
+
+            // Use the same send() method pattern as other methods
             return $this->send(
                 $adminEmail,
-                'user_reported',
+                'user_reported', // Make sure this template exists in resources/views/emails/user_reported.blade.php
                 [
-                    'subject'  => "New User Report (#{$report->id})",
-                    'report'   => $report,
+                    'subject' => "New User Report (#{$report->id})",
+                    'report' => $report,
                     'reporter' => $reporter,
-                    'reported' => $reportedUser,
+                    'reported' => $reportedUser
                 ]
             );
         } catch (\Exception $e) {
-            Log::error("User report email failed for report #{$report->id}: ".$e->getMessage());
+            Log::error("User report email failed: " . $e->getMessage(), [
+                'report_id' => $report->id,
+                'exception' => $e
+            ]);
             return false;
         }
     }
 
+    public function sendContactNotification(Contact $contact)
+    {
+        $adminEmail = config('mail.admin_address') ?? config('mail.from.address');
+
+        if (empty($adminEmail)) {
+            Log::error('No email address available for contact notification');
+            return false;
+        }
+
+        try {
+            // Log thông tin trước khi gửi
+            Log::info("Preparing to send contact notification email", [
+                'to' => $adminEmail,
+                'subject' => "New Contact Message from {$contact->name}",
+                'contact_id' => $contact->id,
+                'contact_name' => $contact->name,
+                'contact_email' => $contact->email
+            ]);
+
+            return $this->send(
+                $adminEmail,
+                'contact_notification',
+                [
+                    'subject' => "New Contact Message from {$contact->name}",
+                    'contact' => $contact
+                ]
+            );
+        } catch (\Exception $e) {
+            Log::error("Contact notification email failed: " . $e->getMessage(), [
+                'contact_id' => $contact->id,
+                'exception' => $e
+            ]);
+            return false;
+        }
+    }
 }

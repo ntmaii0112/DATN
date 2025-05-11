@@ -75,6 +75,17 @@
                                         <span class="mr-2">📚</span> Manage Items
                                     </a>
                                 </li>
+                                <li>
+                                    <a href="{{ route('admin.reports.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition">
+                                        <span class="mr-2">🚩</span> User Reports
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.contacts.index') }}"
+                                       class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hover:text-green-700">
+                                        📩 Contacts
+                                    </a>
+                                </li>
                             @endif
                             <li class="border-t border-gray-100"></li>
                             <li>

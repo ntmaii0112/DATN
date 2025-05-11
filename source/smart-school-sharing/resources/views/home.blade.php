@@ -181,12 +181,11 @@
                 <section class="p-8">
                     <h2 class="text-2xl font-bold text-center mb-6 text-green-700">Popular Categories</h2>
                     <div class="category-grid">
-                        <a href="{{ route('home', ['category' => 1]) }}" class="category-card">📚 Books</a>
-                        <a href="{{ route('home', ['category' => 2]) }}" class="category-card">✏️ Stationery</a>
-                        <a href="{{ route('home', ['category' => 3]) }}" class="category-card">💻 Gadgets</a>
-                        <a href="{{ route('home', ['category' => 4]) }}" class="category-card">🎒 Backpacks</a>
-                        <a href="{{ route('home', ['category' => 5]) }}" class="category-card">🎨 Art Supplies</a>
-                        <a href="{{ route('home', ['category' => 6]) }}" class="category-card">📝 Notebooks</a>
+                        @foreach($categories as $category)
+                            <a href="{{ route('home', ['category' => $category->id]) }}" class="category-card">
+                                <span class="mr-1">{{ $category->icon ?? '📁' }}</span> {{ $category->name }}
+                            </a>
+                        @endforeach
                     </div>
                 </section>
             @endif

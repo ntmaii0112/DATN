@@ -36,7 +36,7 @@ class CategoryController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        Category::create($request->only('name', 'description'));
+        Category::create($request->only('name', 'description','icon'));
 
         return redirect()->route('admin.categories.index')->with('success', 'Thêm danh mục thành công');
     }
@@ -53,7 +53,7 @@ class CategoryController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $category->update($request->only('name', 'description'));
+        $category->update($request->only('name', 'description','icon'));
 
         return redirect()->route('admin.categories.index')->with('success', 'Category updated successfully!');
     }

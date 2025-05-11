@@ -106,5 +106,17 @@ Route::prefix('admin')
             Route::post('/{item}/reject', [AdminItemController::class, 'reject'])->name('admin.items.reject');
             Route::get('/{item}', [AdminItemController::class, 'show'])->name('show');
         });
+
+        // Add these report routes
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
+            Route::get('/{report}', [\App\Http\Controllers\Admin\ReportController::class, 'show'])->name('show');
+            Route::post('/{report}/resolve', [\App\Http\Controllers\Admin\ReportController::class, 'resolve'])->name('resolve');
+        });
+        Route::prefix('contacts')->name('contacts.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ContactController::class, 'index'])->name('index');
+            Route::get('/{contact}', [\App\Http\Controllers\Admin\ContactController::class, 'show'])->name('show');
+            Route::delete('/{contact}', [\App\Http\Controllers\Admin\ContactController::class, 'destroy'])->name('destroy');
+        });
     });
 require __DIR__ . '/auth.php';
