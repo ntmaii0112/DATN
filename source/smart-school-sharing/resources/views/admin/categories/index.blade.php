@@ -4,7 +4,7 @@
     <div class="container mx-auto py-8">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-green-700">Category Management</h2>
-            <a href="{{ route('admin.categories.create') }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Thêm mới</a>
+            <a href="{{ route('admin.categories.create') }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Create new</a>
         </div>
 
         @if(session('success'))

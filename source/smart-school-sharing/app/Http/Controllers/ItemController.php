@@ -39,12 +39,20 @@ class ItemController extends Controller
             $requestCount = 0;
             $userRequests = collect();
             if ($user) {
-                // Lấy tất cả userRequests (không lọc status)
-                $userRequests = \App\Models\Transaction::where('receiver_id', $user->id)->get();
+                // Lấy tất cả userRequests (không lọc status) và sắp xếp theo updated_at giảm dần
+                $userRequests = \App\Models\Transaction::where('receiver_id', $user->id)
+                    ->orderBy('updated_at', 'desc')
+                    ->get();
+                // Nhóm theo item_id và lấy bản ghi đầu tiên (updated_at mới nhất) của mỗi nhóm
+                $distinctUserRequests = $userRequests->groupBy('item_id')->map(function ($group) {
+                    return $group->first();
+                });
+                // Đếm các request có status = pending (từ dữ liệu đã distinct)
+                $requestCount = $distinctUserRequests->where('request_status', 'pending')->count();
                 // Đếm các request có status = pending
                 $requestCount = $userRequests->where('request_status', 'pending')->count();
-                // Lấy danh sách item_id từ các yêu cầu (toàn bộ)
-                $requestedItems = $userRequests->pluck('item_id')->toArray();
+                // Lấy danh sách item_id từ các yêu cầu (đã distinct)
+                $requestedItems = $distinctUserRequests->pluck('item_id')->toArray();
             }
             return view('items.show', compact('item', 'images','requestCount', 'userRequests'));
 

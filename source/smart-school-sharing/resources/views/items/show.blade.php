@@ -64,7 +64,7 @@
             <h1 class="text-3xl font-bold text-green-700 mb-4 truncate" title="{{ $item->name }}">
                 {{ $item->name }}
             </h1>
-            <p class="text-gray-600 mb-6 truncate" title="{{ $item->description }}">
+            <p class="text-gray-600 mb-6 whitespace-pre-line break-words" title="{{ $item->description }}">
                 {{ $item->description }}
             </p>
 

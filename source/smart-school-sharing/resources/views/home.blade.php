@@ -34,21 +34,19 @@
                             <!-- ... phần còn lại giữ nguyên ... -->
                         </section>
                     @endif
-                    <div class="space-y-4">
-                        @foreach ($searchResults as $item)
-                            <div class="bg-white border rounded-lg overflow-hidden hover:shadow-md transition flex flex-col md:flex-row min-w-0">
-                                <!-- Tách riêng phần clickable và button -->
-                                <div class="flex flex-col md:flex-row">
-                                    <!-- Phần thông tin có thể click -->
-                                    <a href="{{ route('items.show', $item->id) }}" class="flex flex-1">
+                        <div class="space-y-4">
+                            @foreach ($searchResults as $item)
+                                <div class="bg-white border rounded-lg overflow-hidden hover:shadow-md transition flex flex-col md:flex-row min-w-0">
+                                    <!-- Phần hiển thị chính, gồm ảnh và mô tả (clickable) -->
+                                    <a href="{{ route('items.show', $item->id) }}" class="flex flex-1 md:flex-row flex-col">
                                         <!-- Image Column -->
-                                        <div class="md:w-1/4 flex-shrink-0">
+                                        <div class="flex-shrink-0 w-56 h-56">
                                             @if($item->first_image_url)
                                                 <img src="{{ $item->first_image_url }}"
                                                      alt="{{ $item->name }}"
-                                                     class="w-full h-48 md:h-full object-cover">
+                                                     class="w-full h-full object-cover">
                                             @else
-                                                <img src="{{ asset('images/no-image.png') }}" alt="No Image" width="848px">
+                                                <img src="{{ asset('images/no-image.png') }}" class="w-full h-full object-cover" alt="No Image">
                                             @endif
                                         </div>
 
@@ -65,23 +63,24 @@
                                                 </div>
                                             </div>
 
-                                            <p class="text-gray-600 mt-2">{{ Str::limit($item->description, 100) }}</p>
+                                            <p class="text-gray-900 break-words max-w-xs">{{ Str::limit($item->description, 100) }}</p>
 
                                             <div class="flex items-center mt-3 text-sm text-gray-500">
                                                 <span class="mr-2">📍 {{ $item->location ?? 'N/A' }}</span>
                                                 <span class="px-2 py-1 rounded
-                                                    @if($item->status === 'available') bg-green-100 text-green-800
-                                                    @elseif($item->status === 'pending') bg-yellow-100 text-yellow-800
-                                                    @else bg-red-100 text-red-800 @endif">
-                                                    {{ ucfirst($item->status) }}
-                                                </span>
+                            @if($item->status === 'available') bg-green-100 text-green-800
+                            @elseif($item->status === 'pending') bg-yellow-100 text-yellow-800
+                            @else bg-red-100 text-red-800 @endif">
+                            {{ ucfirst($item->status) }}
+                        </span>
                                             </div>
 
                                             <div class="flex items-center mt-4">
                                                 <div class="flex items-center">
                                                     <div class="bg-gray-100 rounded-full p-1 mr-2">
                                                         <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                                         </svg>
                                                     </div>
                                                     <div>
@@ -91,7 +90,9 @@
                                             </div>
                                         </div>
                                     </a>
-                                    <div class="p-4 flex items-center justify-end md:justify-center w-48 flex-shrink-0">
+
+                                    <!-- Nút borrow -->
+                                    <div class="flex md:flex-col justify-center items-center p-4 md:w-48 w-full">
                                         <x-borrow-button
                                             :item="$item"
                                             :requestCount="$requestCount"
@@ -99,11 +100,10 @@
                                         />
                                     </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
+                            @endforeach
+                        </div>
 
-                    <!-- Pagination -->
+                        <!-- Pagination -->
                     @if($searchResults->hasPages())
                         <div class="mt-6">
                             {{ $searchResults->appends(request()->query())->links() }}
@@ -130,21 +130,6 @@
                             <div class="swiper-wrapper" id="featured-items-wrapper">
                                 @foreach ($featuredItems as $item)
                                     <div class="swiper-slide h-auto">
-{{--                                        <a href="{{ route('items.show', $item->id) }}" class="slider-item min-w-[200px] bg-white p-4 shadow rounded-md block hover:bg-green-50 transition">--}}
-{{--                                            @if($item->first_image_url)--}}
-{{--                                                <img src="{{ $item->first_image_url }}"--}}
-{{--                                                     alt="{{ $item->name }}"--}}
-{{--                                                     class="w-full h-40 object-cover rounded-t-md mb-3">--}}
-{{--                                            @else--}}
-{{--                                                <div class="w-full h-40 bg-gray-200 flex items-center justify-center rounded-t-md mb-3">--}}
-{{--                                                    <span class="text-gray-500 text-sm">No Image</span>--}}
-{{--                                                </div>--}}
-{{--                                            @endif--}}
-
-{{--                                            <div class="font-bold text-lg text-green-700">{{ $item->name }}</div>--}}
-{{--                                            <div class="text-gray-600 text-sm">{{ Str::limit($item->description, 60) }}</div>--}}
-{{--                                            <div class="text-xs mt-2 text-gray-400">#{{ $item->item_condition }} | {{ $item->status }}</div>--}}
-{{--                                        </a>--}}
                                         <a href="{{ route('items.show', $item->id) }}" class="slider-item bg-white shadow rounded-md hover:bg-green-50 transition">
                                             @if($item->first_image_url)
                                                 <img src="{{ $item->first_image_url }}"

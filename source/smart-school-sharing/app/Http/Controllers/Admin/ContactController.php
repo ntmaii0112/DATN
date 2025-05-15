@@ -8,11 +8,21 @@ use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $contacts = Contact::orderBy('created_at', 'desc')->paginate(15);
+        $query = Contact::query();
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+        $contacts = $query->orderBy('created_at', 'desc')->paginate(15);
+
         return view('admin.contacts.index', compact('contacts'));
     }
+
 
     public function show(Contact $contact)
     {

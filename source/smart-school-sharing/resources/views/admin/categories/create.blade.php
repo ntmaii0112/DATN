@@ -13,7 +13,7 @@
             </div>
 
             <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">Mô tả</label>
+                <label class="block text-gray-700 font-bold mb-2">Description</label>
                 <textarea name="description" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600">{{ old('description') }}</textarea>
             </div>
             <div class="mb-4">
@@ -22,7 +22,7 @@
             </div>
 
             <div class="flex justify-end">
-                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Lưu</button>
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Create</button>
             </div>
         </form>
     </div>
