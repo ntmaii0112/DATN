@@ -76,7 +76,7 @@
 
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($item->del_flag)
-                                        <span class="px-2 py-1 text-xs font-semibold rounded bg-gray-200 text-gray-700">Deleted</span>
+                                        <span class="px-2 py-1 text-xs font-semibold rounded bg-gray-100 text-gray-800">Deleted</span>
                                     @else
                                     @php
                                         $statusClasses = [
@@ -214,7 +214,7 @@
                                         'waiting_payment' => 'bg-purple-100 text-purple-800',
                                         'approved' => 'bg-blue-100 text-blue-800',
                                         'rejected' => 'bg-red-100 text-red-800',
-                                        'cancelled' => 'bg-red-100 text-red-800',
+                                        'cancelled' => 'bg-gray-100 text-gray-800',
                                         'completed' => 'bg-green-100 text-green-800',
                                     ];
                                 @endphp

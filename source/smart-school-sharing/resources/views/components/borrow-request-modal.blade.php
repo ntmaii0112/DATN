@@ -72,21 +72,21 @@
                         <span class="ml-2 text-sm text-gray-600">I commit to using and handling with care.</span>
                     </label>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Payment Method *</label>
-                    <div class="space-y-2">
-                        <label class="flex items-center">
-                            <input type="radio" name="payment_method" value="cash" checked
-                                   class="text-green-600 focus:ring-green-500">
-                            <span class="ml-2">Pay with cash when receiving item</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="radio" name="payment_method" value="momo"
-                                   class="text-green-600 focus:ring-green-500">
-                            <span class="ml-2">Pay deposit with MoMo e-wallet</span>
-                        </label>
-                    </div>
-                </div>
+{{--                <div class="mb-4">--}}
+{{--                    <label class="block text-gray-700 text-sm font-bold mb-2">Payment Method *</label>--}}
+{{--                    <div class="space-y-2">--}}
+{{--                        <label class="flex items-center">--}}
+{{--                            <input type="radio" name="payment_method" value="cash" checked--}}
+{{--                                   class="text-green-600 focus:ring-green-500">--}}
+{{--                            <span class="ml-2">Pay with cash when receiving item</span>--}}
+{{--                        </label>--}}
+{{--                        <label class="flex items-center">--}}
+{{--                            <input type="radio" name="payment_method" value="momo"--}}
+{{--                                   class="text-green-600 focus:ring-green-500">--}}
+{{--                            <span class="ml-2">Pay deposit with MoMo e-wallet</span>--}}
+{{--                        </label>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
 
                 <div class="flex justify-end">
                     <button type="button" onclick="closeModal()"

@@ -18,7 +18,7 @@ class HomeController extends Controller
             ->whereIn('status', ['available', 'unavailable','pending'])
             ->where('del_flag', false)
             ->latest()
-            ->take(5)
+            ->take(4)
             ->get()
             ->map(function ($item) {
                 $item->first_image_url = $item->images->isNotEmpty()

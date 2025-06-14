@@ -67,7 +67,7 @@
                     </div>
                 </div>
 
-                <input type="file" name="images[]" multiple accept="image/*" class="hidden"
+                <input type="file" name="images[]" multiple accept=".png,.jpg,.jpeg" class="hidden"
                        x-ref="fileInput" @change="handleFileSelect($event)">
 
                 <!-- Upload Area for New Images -->

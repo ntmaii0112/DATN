@@ -24,7 +24,7 @@ class TransactionController extends Controller
             'purpose' => 'required|string|max:255',
             'message' => 'nullable|string',
             'agreement' => 'required|accepted',
-            'payment_method' => 'required|in:cash,momo',
+//            'payment_method' => 'required|in:cash,momo',
         ]);
 
         $item = Item::findOrFail($request->item_id);
@@ -43,12 +43,12 @@ class TransactionController extends Controller
             'message' => $request->message,
             'request_status' => 'waiting_payment',
             'payment_status' => 'unpaid',
-            'payment_method' => $request->payment_method,
+//            'payment_method' => $request->payment_method,
         ]);
 
-        if ($request->payment_method === 'momo') {
-            return $this->initiateMomoPayment($transaction);
-        }
+//        if ($request->payment_method === 'momo') {
+//            return $this->initiateMomoPayment($transaction);
+//        }
 
         // For cash payment, send notification immediately
         $transaction->update(['request_status' => 'pending']);
@@ -57,6 +57,7 @@ class TransactionController extends Controller
 
         return redirect()->back()->with('success', 'Borrow request has been sent successfully!');
     }
+    /*
     public function initiateMomoPayment($transaction)
     {
         $endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
@@ -121,7 +122,7 @@ class TransactionController extends Controller
                 ->with('error', 'Could not initiate payment. Please try again later.');
         }
     }
-
+*/
 
     /**
      * Gửi email thông báo mượn đồ

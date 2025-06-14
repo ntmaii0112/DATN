@@ -19,7 +19,7 @@ class Transaction extends Model
         'giver_id',
         'receiver_id',
         'item_id',
-        'status',
+//        'status',
         'created_by',
         'updated_by',
         'borrower_name',
@@ -28,11 +28,11 @@ class Transaction extends Model
         'end_date',
         'purpose',
         'message',
-        'request_status',
-        'payment_status',
-        'payment_method',
-        'payment_reference',
-        'deposit_amount'
+        'request_status'
+//        'payment_status',
+//        'payment_method',
+//        'payment_reference',
+//        'deposit_amount'
     ];
 
     public function item()
